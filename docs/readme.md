@@ -7,7 +7,7 @@
 
 ## Customizing
 
-## [Additonal Information](https://weewx-extensions.github.io/development-tools/home-page/)
+## [Additonal Information](https://weewx-extensions.github.io/development-tools/home/)
 
 ### Getting Help
 
