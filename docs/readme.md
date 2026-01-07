@@ -1,11 +1,14 @@
+<!-- markdownlint-disable first-line-heading  -->
 
 ## Description
 
 ## Preqrequisites
 
-## Installation
+## Installing
 
-## Customizing
+## Configuring
+
+## Updating
 
 ## [Additonal Information](https://weewx-extensions.github.io/development-tools/home/)
 
