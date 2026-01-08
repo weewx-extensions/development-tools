@@ -4,7 +4,7 @@ nav_exclude: true
 ---
 
 <!-- 
-This 'wraps' a `readme.md` so that the readme can be displayed in the repository and github pages.
+This 'wraps' a `readme.md` so that the readme can be displayed in the repository and GitHub pages.
 It turns off the processing that would include the common footer by using a 'layout' that does not have a footer.
 The footer is 'included' directly in the `readme.md` because the readme needs to be only markdown (or html).
 -->
