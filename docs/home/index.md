@@ -5,4 +5,8 @@ has_toc: true
 nav_order: 1
 ---
 
-Here is some information
+This is a template for github home page.
+It has children, but that could be turned off.
+It displays a table of contents, but that could also be turned off.
+
+{{site.github.repository_url}}
