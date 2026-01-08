@@ -10,7 +10,7 @@ This means it must be 'native' markdown (or html).
 Therefore the 'footer' is included directly in this file.
 And the `index.md` file for github pages 'turns off the footer'.
 
-**Remmber to update the URLs in the 'footer' when using.**
+**When using, remmber to update the URLs in the 'footer' and in 'additional information' below.**
 
 ## Preqrequisites
 
