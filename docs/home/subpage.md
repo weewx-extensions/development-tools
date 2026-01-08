@@ -1,6 +1,6 @@
 ---
 title: Some additional information
-parent: Home Page
+parent: Overview
 #ancestor: Home Page
 #has_children: false
 #has_toc: false
