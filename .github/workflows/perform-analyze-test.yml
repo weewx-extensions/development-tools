@@ -1,3 +1,6 @@
+#
+#
+#
 name: Perform the analysis and test
 
 on:
@@ -46,30 +49,38 @@ on:
       lint:
         required: true
         type: boolean
+        description: 'Controls if linting is performed.'
       unit-test:
         required: true
         type: boolean
+        description: 'Controls if unit tests are run'
       function-test:
         required: true
         type: boolean
+        description: 'Controls if function tests are run'
       integration-test:
         required: true
         type: boolean
       e2e-test:
         required: true
         type: boolean
+        description: 'Controls if end-to-end tests are run'
       code-coverage:
         required: true
         type: boolean
+        description: 'Controls if code coverage is measured'
       coveralls-upload:
         required: true
         type: boolean
+        description: 'Controls if code coverage is uploaded to Coveralls'
       codecov-upload:
         required: true
         type: boolean
+        description: 'Controls if code coverage is uploaded to Codecov'
       sonar-scan:
         required: true
         type: boolean
+        description: 'Controls if SonarQube scan is performed'
     secrets:
       CODECOV_TOKEN:
         required: true
