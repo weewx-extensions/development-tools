@@ -1,4 +1,4 @@
-name: Matrix Test the analyze and test workflow
+name: The analyze and test matrix workflow
 
 on:
   workflow_call:

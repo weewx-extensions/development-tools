@@ -1,4 +1,4 @@
-name: Single Test the analyze and test workflow
+name: The analyze and test workflow
 
 on:
   workflow_call:

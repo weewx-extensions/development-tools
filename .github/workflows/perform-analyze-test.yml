@@ -1,4 +1,4 @@
-name: Analyze and test the code
+name: Perform the analysis and test
 
 on:
   workflow_call:
