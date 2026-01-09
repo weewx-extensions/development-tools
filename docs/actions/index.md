@@ -7,6 +7,16 @@ nav_order: 3
 
 explain the  `.github/workflow` directory
 
+analyze-test-matrix.yml
+analyze-test.yml
+fetch.yml
+local-analyze-test-matrix.yml
+local-analyze-test.yml
+stale.yml
+versioning.yml
+
+
+
 ### run locally
 
 options -> artifact-server-path = act-artifacts
@@ -34,3 +44,17 @@ new repository secret = 'CODECOV_TOKEN'
 use token from codecov.io
 
 upload to sonar cloud
+sign into sonarcloud.io
+top right, select "+" (analyze a new project)
+select the github repo
+select "setup"
+new code -> previous version -> create project
+
+on sonarcloud.io, select the new project
+lower left, select "administration -> analysis method"
+disable 'automatic'
+add token to repo on gthub
+in github, goto repo settings ->secrets and variables -> actions
+new repository secret = 'SONAR_TOKEN'
+add sonar-project.properties to github
+be sure to set organization and key
