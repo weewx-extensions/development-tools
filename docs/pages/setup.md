@@ -55,3 +55,20 @@ From within the `docs` directory, run
 For additional information see [building your site locally](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/testing-your-github-pages-site-locally-with-jekyll)
 
 ## The  `docs-template` directory
+
+The above steps were followed to create the `docs-template` directory.
+The content, the markdown files, was then editted to create a template directory that can be used to seed new repositories.
+
+The `readme` can be used in GitHub Pages and correctly displays 'standalone', for example in GitHub.
+This is accomplished because the `readme` template consists of only markdown.
+It displays without any processing.
+This is accomplished by using a special layout that does not include the footer used when building and deploying GitHub Pages.
+Instead a 'copy' of the footer is directly embedded in the readme.
+To make that all work, when building the GitHub Pages the readme is actually included from an `index.md` with the appropriate jekyll front matter.
+
+An example home page is also included in the `docs-template` directory.
+This can be found in the `home` directory.
+The `index.md` within this directory acts as the home page.
+The `subpage.md` is an example of creating a subpage using the `just-the-docs` jekyll theme.
+
+The `subpage.md` also has an example of displaying collapsable categories in a page.
