@@ -27,7 +27,12 @@ It will run code coveraage and invoke the analysis 'providers' when the matrix i
 
 ### stale
 
+A workflow that will mark 'inactive' issues as stale.
+If there is no activity against the stale issue, it will be closed.
+
 ### versioning
+
+Create and keep up to date tags for `@latest` and for `@Vx`, where x is the major version number of `x.y.x`.
 
 ### run locally
 
