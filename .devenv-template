@@ -1,4 +1,4 @@
-export WEEWX_MODULE_NAME=simpleclass
+export WEEWX_MODULE_NAME=REPLACE_ME
 
 export WEEWX_PYENV_VERSION='3.10'
 

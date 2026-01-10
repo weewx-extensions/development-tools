@@ -9,7 +9,7 @@ jobs:
     # This allows one to test the workflow prior to committing and creating a release
     uses: ./../../weewx-extensions/development-tools/.github/workflows/analyze-test-matrix.yml
     with:
-      module-name: 'simpleclass'
+      module-name: 'REPLACE_ME'
       #pip-list: 'paho-mqtt'
       #package-list: 'mosquitto'
       unit-test: true

@@ -1,5 +1,5 @@
-sonar.projectKey=weewx-extensions_test
-sonar.organization=weewx-extensions
+sonar.projectKey=REPLACE_ME_REPLACE_ME
+sonar.organization=REPLACE_ME
 
 # This is the name and version displayed in the SonarCloud UI.
 #sonar.projectName=weewx-mqttpublish

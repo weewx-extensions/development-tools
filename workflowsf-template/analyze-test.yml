@@ -9,7 +9,7 @@ jobs:
   analyze-test:
     uses: weewx-extensions/development-tools/.github/workflows/analyze-test.yml@v4
     with:
-      module-name: 'simpleclass'
+      module-name: 'REPLACE_ME'
       #pip-list: 'paho-mqtt'
       #package-list: 'mosquitto'
       unit-test: true
