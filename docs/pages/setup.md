@@ -1,7 +1,7 @@
 ---
 title: Setting up GitHub pages
 parent: GitHub Pages
-has_children: true
+#has_children: true
 #has_toc: true
 nav_order: 1
 ---
