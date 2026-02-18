@@ -5,11 +5,7 @@ on:
       upstream_url: 
         required: true
         type: string
-        description: upstream URL (fork base)  
-      workflow_token:
-        required: true
-        type: string
-        description: Authorization token
+        description: upstream URL (fork base)
       upstream_branch:
         required: false
         type: string
@@ -48,7 +44,7 @@ jobs:
     - uses: dabreadman/sync-upstream-repo@v1.3.0
       with:
         upstream_repo: ${{ inputs.upstream_url }}
-        token: ${{ inputs.workflow_token }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         upstream_branch: ${{ inputs.upstream_branch }}
         downstream_branch: ${{ inputs.downstream_branch }}
         fetch_args: ${{ inputs.fetch_args }}
