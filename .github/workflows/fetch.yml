@@ -36,6 +36,9 @@ on:
         type: string
         default: 'false'
         description: Optional toggle to spawn time logs (keeps action active) 
+    secrets:
+        token:
+          required: true
 
 jobs:
   fetch:
@@ -44,7 +47,7 @@ jobs:
     - uses: dabreadman/sync-upstream-repo@v1.3.0
       with:
         upstream_repo: ${{ inputs.upstream_url }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.token }}
         upstream_branch: ${{ inputs.upstream_branch }}
         downstream_branch: ${{ inputs.downstream_branch }}
         fetch_args: ${{ inputs.fetch_args }}
