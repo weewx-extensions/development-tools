@@ -29,7 +29,8 @@ on:
       push_args:
         required: false
         type: string
-        default: '--tags -f'
+        default: ''
+        #default: '--tags -f'
         description: Optional push arguments
       spawn_logs:
         required: false
