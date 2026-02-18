@@ -24,12 +24,12 @@ on:
       merge_args:
         required: false
         type: string
-        default: '--tags -f'
+        default: ''
         description: Optional merge arguments
       push_args:
         required: false
         type: string
-        default: '--tags -f'
+        default: ''
         description: Optional push arguments
       spawn_logs:
         required: false
