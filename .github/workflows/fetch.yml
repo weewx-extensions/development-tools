@@ -19,7 +19,7 @@ on:
       fetch_args:
         required: false
         type: string
-        default: '--tags --force --prune-tags'
+        default: '--tags -f --prune-tags'
         description: Optional fetch arguments
       merge_args:
         required: false
