@@ -1,0 +1,57 @@
+name: Fetch from upstream
+on:
+  workflow_call:
+    inputs:
+      upstream_url: 
+        required: true
+        type: string
+        description: upstream URL (fork base)  
+      workflow_token:
+        required: true
+        type: string
+        description: Authorization token
+      upstream_branch:
+        required: false
+        type: string
+        default: 'master'
+        description: Upstream branch
+      downstream_branch:
+        required: false
+        type: string
+        default: ''
+        description: Defaults to upstream_branch
+      fetch_args:
+        required: false
+        type: string
+        default: '--tags -f'
+        description: Optional fetch arguments
+      merge_args:
+        required: false
+        type: string
+        default: '--tags -f'
+        description: Optional merge arguments
+      push_args:
+        required: false
+        type: string
+        default: '--tags -f'
+        description: Optional push arguments
+      spawn_logs:
+        required: false
+        type: string
+        default: 'false'
+        description: Optional toggle to spawn time logs (keeps action active) 
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dabreadman/sync-upstream-repo@v1.3.0
+      with:
+        upstream_repo: ${{ inputs.upstream_url }}
+        token: ${{ inputs.workflow_token }}
+        upstream_branch: ${{ inputs.upstream_branch }}
+        downstream_branch: ${{ inputs.downstream_branch }}
+        fetch_args: ${{ inputs.fetch_args }}
+        merge_args: ${{ inputs.merge_args }}
+        push_args: ${{ inputs.push_args }}
+        spawn_logs: ${{ inputs.spawn_logs }}
