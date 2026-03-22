@@ -81,7 +81,7 @@ on:
         required: true
         type: boolean
         description: 'Controls if code coverage is uploaded to codacy'
-        sonar-scan:
+      sonar-scan:
         required: true
         type: boolean
         description: 'Controls if SonarQube scan is performed'
