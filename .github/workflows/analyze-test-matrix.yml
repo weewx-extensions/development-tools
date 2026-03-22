@@ -82,7 +82,7 @@ on:
     secrets:
       CODECOV_TOKEN:
         required: true
-      CODACY_TOKEN:
+      CODACY_API_TOKEN:
         required: true
       SONAR_TOKEN:
         required: true
@@ -136,5 +136,5 @@ jobs:
       sonar-scan: ${{inputs.sonar-scan}}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      CODACY_TOKEN: ${{ secrets.CODACY_TOKEN }}
+      CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
