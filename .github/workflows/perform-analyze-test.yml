@@ -77,12 +77,18 @@ on:
         required: true
         type: boolean
         description: 'Controls if code coverage is uploaded to Codecov'
-      sonar-scan:
+      codeacy-upload:
+        required: true
+        type: boolean
+        description: 'Controls if code coverage is uploaded to codacy'
+        sonar-scan:
         required: true
         type: boolean
         description: 'Controls if SonarQube scan is performed'
     secrets:
       CODECOV_TOKEN:
+        required: true
+      CODACY_TOKEN:
         required: true
       SONAR_TOKEN:
         required: true
@@ -115,6 +121,7 @@ jobs:
         echo "INPUT: code-coverage:         ${{inputs.code-coverage}}"
         echo "INPUT: coveralls-upload:      ${{inputs.coveralls-upload}}"
         echo "INPUT: codecov-upload:        ${{inputs.codecov-upload}}"
+        echo "INPUT: codacy-upload:         ${{inputs.codacy-upload}}"
         echo "INPUT: sonar-scan:            ${{inputs.sonar-scan}}"
 
     - name: Set up Python ${{ inputs.python-version }}
@@ -207,7 +214,7 @@ jobs:
         coverage run --branch -m pytest bin/user/tests/unit
         # Create a human readable coverage report
         coverage html --include 'bin/user/*.py' --omit bin/user/__init__.py -d results/coverage
-        # Create an xml coverage report, used by: coveralls, codecov, sonar
+        # Create an xml coverage report, used by: coveralls, codecov, codacy, sonar
         coverage xml --include 'bin/user/*.py' --omit bin/user/__init__.py
   
     - name: Archive test-results
@@ -237,6 +244,20 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         override_branch: ${{ env.ACT && 'local' || '' }}
         override_commit: ${{ env.ACT && 'local' || '' }}
+
+    - name: Upload coverage to Codacy
+      if: ${{ !env.ACT && inputs.codacy-upload &&
+                inputs.os-version == inputs.latest-os-version &&
+                inputs.python-version == inputs.latest-python-version && 
+                inputs.weewx-version == inputs.latest-weewx-version}}
+      uses: codacy/codacy-coverage-reporter-action@v1.3.0
+      with:
+        # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        # or
+        api-token: ${{ secrets.CODACY_API_TOKEN }}
+        coverage-reports: coverage.xml
+        # or a comma-separated list for multiple reports
+        # coverage-reports: <PATH_TO_REPORT>, <PATH_TO_REPORT>                
 
     - name: SonarQube Scan
       # Do not attempt to upload on local runs, sonar (free) does not support branch analysis

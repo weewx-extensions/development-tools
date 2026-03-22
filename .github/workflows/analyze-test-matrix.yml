@@ -49,6 +49,10 @@ on:
         required: false
         type: boolean
         default: true
+      codacy-upload:
+        required: false
+        type: boolean
+        default: true
       sonar-scan:
         required: false
         type: boolean
@@ -77,6 +81,8 @@ on:
         default: ''
     secrets:
       CODECOV_TOKEN:
+        required: true
+      CODACY_TOKEN:
         required: true
       SONAR_TOKEN:
         required: true
@@ -126,7 +132,9 @@ jobs:
       code-coverage: ${{inputs.code-coverage}}
       coveralls-upload: ${{inputs.coveralls-upload}}
       codecov-upload: ${{inputs.codecov-upload}}
+      codeacy-upload: ${{inputs.codeacy-upload}}
       sonar-scan: ${{inputs.sonar-scan}}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      CODACY_TOKEN: ${{ secrets.CODACY_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
