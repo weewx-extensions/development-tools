@@ -90,8 +90,7 @@ on:
 jobs:
     run:
 
-        # ToDo: Use master while developing codacy support
-        uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@master
+        uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@v5
         with:
             module-name: ${{inputs.module-name}}
             os-version: ${{inputs.latest-os-version}}
