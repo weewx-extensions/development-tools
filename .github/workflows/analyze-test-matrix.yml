@@ -132,7 +132,7 @@ jobs:
       code-coverage: ${{inputs.code-coverage}}
       coveralls-upload: ${{inputs.coveralls-upload}}
       codecov-upload: ${{inputs.codecov-upload}}
-      codeacy-upload: ${{inputs.codeacy-upload}}
+      codacy-upload: ${{inputs.codacy-upload}}
       sonar-scan: ${{inputs.sonar-scan}}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

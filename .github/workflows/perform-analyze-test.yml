@@ -77,7 +77,7 @@ on:
         required: true
         type: boolean
         description: 'Controls if code coverage is uploaded to Codecov'
-      codeacy-upload:
+      codacy-upload:
         required: true
         type: boolean
         description: 'Controls if code coverage is uploaded to codacy'
