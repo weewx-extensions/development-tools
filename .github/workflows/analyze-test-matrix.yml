@@ -113,7 +113,7 @@ jobs:
       #max-parallel: ${{github.event.env.ACT && 1 || 256}}
 
     # ToDo: Use master while developing codacy support
-    uses: weewx-extensions/development_tools/.github/workflows/perform-analyze-test.yml@master
+    uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@master
     with:
       module-name: ${{inputs.module-name}}
       os-version: ${{matrix.os-version}}
