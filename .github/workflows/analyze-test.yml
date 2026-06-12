@@ -52,7 +52,7 @@ on:
       codacy-upload:
         required: false
         type: boolean
-        default: false
+        default: true
       sonar-scan:
         required: false
         type: boolean
