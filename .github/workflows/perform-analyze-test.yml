@@ -167,6 +167,8 @@ jobs:
         source .venv/bin/activate
 
         weectl station create --no-prompt
+
+    # Perform extension install here
   
     - name: Lint with pylint
       if: ${{inputs.lint}}
