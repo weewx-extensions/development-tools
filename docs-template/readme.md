@@ -20,9 +20,10 @@ And the `index.md` file for github pages 'turns off the footer'.
 
 ## Updating
 
-## [Additonal Information](https://weewx-extensions.github.io/development-tools/home/)
+---
+**Getting Help**
 
-### Getting Help
+For additional information see the [help](https://REPLACE_ME.github.io/REPLACE_ME/home/).
 
 Feel free to
 [open an issue](https://github.com/REPLACE_ME/REPLACE_ME/issues/new),
