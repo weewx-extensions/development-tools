@@ -162,6 +162,12 @@ jobs:
           python -m pip install weewx==${{ inputs.weewx-version }}
         fi
   
+    - name: Configure WeeWX station (${{ inputs.weewx-version }})
+      run: |
+        source .venv/bin/activate
+
+        weectl station create --no-prompt
+  
     - name: Lint with pylint
       if: ${{inputs.lint}}
       run: |
