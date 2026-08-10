@@ -216,7 +216,7 @@ jobs:
         source .venv/bin/activate
 
         # ToDo: path veries if running local (via act) or on github
-        pytest bin/user/tests/integ --import-mode=append -o pythonpath=/home/runner/weewx-data/bin /root/weewx-data/bin --html=results/integtests.html --self-contained-html
+        pytest bin/user/tests/integ --import-mode=append -o pythonpath=/home/runner/weewx-data/bin --html=results/integtests.html --self-contained-html
 
         #pytest bin/user/tests/integ --import-mode=append -o pythonpath=/root/weewx-data/bin --html=results/integtests.html --self-contained-html
 
