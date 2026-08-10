@@ -173,8 +173,8 @@ jobs:
       run: |
         source .venv/bin/activate
 
-        sudo apt-get install -y rsyslog
-        sudo rsyslogd
+        #sudo apt-get install -y rsyslog
+        #sudo rsyslogd
 
         weectl extension install https://github.com/chaunceygardiner/weewx-loopdata/archive/master.zip --yes
 
