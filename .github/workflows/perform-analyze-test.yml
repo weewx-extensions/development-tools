@@ -169,7 +169,15 @@ jobs:
         weectl station create --no-prompt
 
     # Perform extension install here
-  
+    - name: Install necessary WeeWX extensions (${{ inputs.weewx-version }})
+      run: |
+        source .venv/bin/activate
+
+        sudo apt-get install -y rsyslog
+        sudo rsyslogd
+
+        weectl extension install https://github.com/chaunceygardiner/weewx-loopdata/archive/master.zip --yes
+
     - name: Lint with pylint
       if: ${{inputs.lint}}
       run: |
