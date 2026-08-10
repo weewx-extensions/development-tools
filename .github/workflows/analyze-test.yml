@@ -90,8 +90,8 @@ on:
 jobs:
     run:
 
-        uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@v5
-        # uses: ./.github/workflows/perform-analyze-test.yml
+        # uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@v5
+        uses: ./.github/workflows/perform-analyze-test.yml
         with:
             module-name: ${{inputs.module-name}}
             os-version: ${{inputs.latest-os-version}}
