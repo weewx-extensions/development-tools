@@ -184,6 +184,8 @@ jobs:
 
         weectl extension install https://github.com/chaunceygardiner/weewx-loopdata/archive/master.zip --yes
 
+        weectl extension install . --yes
+
     - name: Lint with pylint
       if: ${{inputs.lint}}
       run: |
@@ -213,8 +215,7 @@ jobs:
       run: |
         source .venv/bin/activate
 
-        export PYTHONPATH=bin:$PYTHONPATH
-        pytest bin/user/tests/integ --html=results/integtests.html --self-contained-html
+        pytest bin/user/tests/integ --import-mode=append -o pythonpath=/root/weewx-data/bin --html=results/integtests.html --self-contained-html
 
     - name: E2E tests
       if: ${{inputs.e2e-test}}
@@ -226,7 +227,8 @@ jobs:
 
     - name: Code Coverage
     # Only run code coverage once, against the latest python version and weewx version
-      if: ${{ inputs.os-version == inputs.latest-os-version &&
+      if: ${{ inputs.unit-test &&
+              inputs.os-version == inputs.latest-os-version &&
               inputs.python-version == inputs.latest-python-version && 
               inputs.weewx-version == inputs.latest-weewx-version}}
       run: |
