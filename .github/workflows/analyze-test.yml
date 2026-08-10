@@ -91,6 +91,7 @@ jobs:
     run:
 
         uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@v5
+        # uses: ./../../weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml
         # uses: ./.github/workflows/perform-analyze-test.yml
         with:
             module-name: ${{inputs.module-name}}
