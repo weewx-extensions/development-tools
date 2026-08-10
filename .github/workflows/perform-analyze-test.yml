@@ -151,6 +151,13 @@ jobs:
 
         if [ "${{inputs.package-list}}" != "" ]; then sudo apt-get -qq --assume-yes install ${{inputs.package-list}}; fi
 
+    - name: Install ACT (running locally) prerequisites (${{ inputs.weewx-version }})
+      if: ${{ env.ACT }}
+      run: |
+        # Need logging setup to run weectl extension install 
+        sudo apt-get install -y rsyslog
+        sudo rsyslogd
+
     - name: Install WeeWX (${{ inputs.weewx-version }})
       run: |
         source .venv/bin/activate
@@ -168,13 +175,12 @@ jobs:
 
         weectl station create --no-prompt
 
-    # Perform extension install here
+    # As of 8/10/2026, only weewx-loopdata extension is needed for integration tests.
+    # ToDo: Support multiple extensions
+    # ToDo: Support matrix of versions for a given extension
     - name: Install necessary WeeWX extensions (${{ inputs.weewx-version }})
       run: |
         source .venv/bin/activate
-
-        #sudo apt-get install -y rsyslog
-        #sudo rsyslogd
 
         weectl extension install https://github.com/chaunceygardiner/weewx-loopdata/archive/master.zip --yes
 
