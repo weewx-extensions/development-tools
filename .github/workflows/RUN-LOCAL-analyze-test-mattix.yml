@@ -7,7 +7,7 @@ jobs:
   analyze-test:
     # This will not work on GitHub, but works with ACT.
     # This allows one to test the workflow prior to committing and creating a release
-    uses: ./../../weewx-extensions/development-tools/.github/workflows/analyze-test-matrix.yml
+    uses: ./.github/workflows/analyze-test-matrix.yml
     with:
       module-name: 'simpleclass'
       #pip-list: 'paho-mqtt'
