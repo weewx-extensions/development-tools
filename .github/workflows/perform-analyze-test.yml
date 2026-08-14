@@ -42,6 +42,14 @@ on:
         required: true
         type: string
         description: 'Additional OS packages to be installed.'
+      weewx-extension:
+        required: true
+        type: string
+        description: 'The required WeeWX extension.'
+      weewx-extension-ver:
+        required: true
+        type: string
+        description: 'The required WeeWX extension version.'
       artifact-name-suffix:
         required: true
         type: string
@@ -112,6 +120,8 @@ jobs:
         echo "INPUT: latest-weewx-version:  ${{inputs.latest-weewx-version}}"
         echo "INPUT: pip-list:              ${{inputs.pip-list}}"
         echo "INPUT: package-list:          ${{inputs.package-list}}"
+        echo "INPUT: weewx-extension:       ${{inputs.weewx-extension}}"
+        echo "INPUT: weewx-extension-ver:   ${{inputs.weewx-extension-ver}}"
         echo "INPUT: artifact-name-suffix:  ${{inputs.artifact-name-suffix}}"
         echo "INPUT: lint:                  ${{inputs.lint}}"
         echo "INPUT: unit-test:             ${{inputs.unit-test}}"
@@ -180,11 +190,21 @@ jobs:
     # ToDo: Support matrix of versions for a given extension
     - name: Install necessary WeeWX extensions (${{ inputs.weewx-version }})
       run: |
-        source .venv/bin/activate
+        WEEWX_EXTENSION=${{inputs.weewx-extension}}
+        WEEWX_EXTENSION_VER=${{inputs.weewx-extension-ver}}
 
-        weectl extension install https://github.com/chaunceygardiner/weewx-loopdata/archive/master.zip --yes
+        if [ "${WEEWX_EXTENSION}" != "" ]; then
+          source .venv/bin/activate
 
-        weectl extension install . --yes
+          if [ "${WEEWX_EXTENSION_VER}" == "master" ]; then
+            EXTENSION="$WEEWX_EXTENSION/archive/master.zip"
+          else
+            EXTENSION="$WEEWX_EXTENSION/archive/refs/tags/v$WEEWX_EXTENSION_VER.zip"
+          fi
+          weectl extension install $EXTENSION --yes
+
+          weectl extension install . --yes
+        fi
 
     - name: Lint with pylint
       if: ${{inputs.lint}}

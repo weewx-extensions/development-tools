@@ -12,6 +12,8 @@ jobs:
       module-name: 'simpleclass'
       #pip-list: 'paho-mqtt'
       #package-list: 'mosquitto'
+      weewx-extension: 'https://github.com/chaunceygardiner/weewx-loopdata/'
+      weewx-extension-ver: '6.9'
       unit-test: true
       function-test: false
       integration-test: false

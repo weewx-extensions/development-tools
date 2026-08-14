@@ -17,6 +17,16 @@ on:
         type: string
         default: ''
         description: 'Additional OS packages to be installed.'
+      weewx-extension:
+        required: false
+        type: string
+        default: ''
+        description: 'The WeeWX extension.'
+      weewx-extension-ver:
+        required: false
+        type: string
+        default: 'master'
+        description: 'The WeeWX extension version.'
       lint:
         required: false
         type: boolean
@@ -112,8 +122,8 @@ jobs:
             python-version: ${{inputs.latest-python-version}}
       #max-parallel: ${{github.event.env.ACT && 1 || 256}}
 
-    uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@v5
-    # uses: ./../../weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml
+    # uses: weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml@v5
+    uses: ./../../weewx-extensions/development-tools/.github/workflows/perform-analyze-test.yml
     # uses: ./.github/workflows/perform-analyze-test.yml
     with:
       module-name: ${{inputs.module-name}}
@@ -125,6 +135,8 @@ jobs:
       latest-weewx-version: ${{inputs.latest-weewx-version}}
       pip-list: ${{inputs.pip-list}}
       package-list: ${{inputs.package-list}}
+      weewx-extension: ${{inputs.weewx-extension}}
+      weewx-extension-ver: ${{inputs.weewx-extension-ver}}
       artifact-name-suffix: ${{inputs.artifact-name-suffix}}
       lint: ${{inputs.lint}}
       unit-test: ${{inputs.unit-test}}
