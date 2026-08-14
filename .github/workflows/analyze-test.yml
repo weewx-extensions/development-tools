@@ -80,7 +80,7 @@ on:
       latest-weewx-version:
         required: false
         type: string
-        default: '5.2.0'
+        default: '5.5.0'
       oldest-weewx-version:
         required: false
         type: string
