@@ -265,7 +265,7 @@ jobs:
         coverage xml --include 'bin/user/*.py' --omit bin/user/__init__.py
   
     - name: Archive test-results
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: test-${{ inputs.os-version }}-${{ inputs.python-version }}-${{ inputs.weewx-version }}${{inputs.artifact-name-suffix}}
         path: results
