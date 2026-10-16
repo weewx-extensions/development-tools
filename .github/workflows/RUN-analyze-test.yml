@@ -7,7 +7,7 @@ on:
 
 jobs:
   analyze-test:
-    uses: ./.github/workflows/analyze-test.yml
+    uses: weewx-extensions/development-tools/.github/workflows/analyze-test-matrix.yml@latest
     with:
       module-name: 'simpleclass'
       lint-fail: true
