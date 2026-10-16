@@ -113,7 +113,8 @@ on:
 
 jobs:
   build:
-    name: ${{ inputs.os-version}} ${{ inputs.python-version }} ${{ inputs.weewx-version }}
+    # '*' marks the job that runs lint (same condition as the lint steps below).
+    name: ${{ (inputs.lint && inputs.os-version == inputs.latest-os-version && inputs.python-version == inputs.latest-python-version && inputs.weewx-version == inputs.latest-weewx-version) && '* ' || '' }}${{ inputs.os-version}} ${{ inputs.python-version }} ${{ inputs.weewx-version }}
     runs-on: ${{ inputs.os-version}}
 
     steps:
