@@ -7,9 +7,10 @@ on:
 
 jobs:
   analyze-test:
-    uses: weewx-extensions/development-tools/.github/workflows/analyze-test.yml@v5
+    uses: ./.github/workflows/analyze-test.yml
     with:
       module-name: 'simpleclass'
+      lint-fail: true
       #pip-list: 'paho-mqtt'
       #package-list: 'mosquitto'
       unit-test: true

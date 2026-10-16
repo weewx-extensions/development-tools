@@ -31,6 +31,16 @@ on:
         required: false
         type: boolean
         default: true
+      lint-fail:
+        required: false
+        type: boolean
+        default: false
+        description: 'Fail the job when pylint or flake8 report findings. False just reports.'
+      lint-paths:
+        required: false
+        type: string
+        default: ''
+        description: 'What to lint. Defaults to ./bin/user/<module-name>.py'
       unit-test:
         required: false
         type: boolean
@@ -139,6 +149,8 @@ jobs:
       weewx-extension-ver: ${{inputs.weewx-extension-ver}}
       artifact-name-suffix: ${{inputs.artifact-name-suffix}}
       lint: ${{inputs.lint}}
+      lint-fail: ${{inputs.lint-fail}}
+      lint-paths: ${{inputs.lint-paths}}
       unit-test: ${{inputs.unit-test}}
       function-test: ${{inputs.function-test}}
       integration-test: ${{inputs.integration-test}}

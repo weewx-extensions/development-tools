@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/analyze-test.yml
     with:
       module-name: 'simpleclass'
+      lint-fail: true
       #pip-list: 'paho-mqtt'
       #package-list: 'mosquitto'
       weewx-extension: 'https://github.com/chaunceygardiner/weewx-loopdata/'

@@ -58,6 +58,16 @@ on:
         required: true
         type: boolean
         description: 'Controls if linting is performed.'
+      lint-fail:
+        required: false
+        type: boolean
+        default: false
+        description: 'Fail the job when pylint or flake8 report findings. False just reports.'
+      lint-paths:
+        required: false
+        type: string
+        default: ''
+        description: 'What to lint. Defaults to ./bin/user/<module-name>.py'
       unit-test:
         required: true
         type: boolean
@@ -149,7 +159,7 @@ jobs:
         source .venv/bin/activate
 
         python -m pip install --upgrade pip
-        python -m pip install coverage coveralls configobj mock pylint pytest pytest-cov pytest-html
+        python -m pip install coverage coveralls configobj flake8 flake8-cognitive-complexity mock pylint pytest pytest-cov pytest-html
 
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
@@ -207,12 +217,65 @@ jobs:
         fi
 
     - name: Lint with pylint
-      if: ${{inputs.lint}}
+      if: ${{inputs.lint &&
+            inputs.os-version == inputs.latest-os-version &&
+            inputs.python-version == inputs.latest-python-version &&
+            inputs.weewx-version == inputs.latest-weewx-version}}
+      shell: bash
+      run: |
+        source .venv/bin/activate
+
+        # weectl station create --no-prompt put the station in ~/weewx-data, and
+        # weectl extension install copied the extensions into its user package. Put
+        # that package's parent on PYTHONPATH so pylint can import user.<extension>
+        # and check attribute access against the real classes, not just report
+        # 'unable to import'.
+        STATION_USER_DIR="$(find "${HOME}/weewx-data" -maxdepth 3 -type d -name user 2>/dev/null | head -1)"
+        if [ -n "${STATION_USER_DIR}" ]; then
+          export PYTHONPATH="$(dirname "${STATION_USER_DIR}")"
+          echo "PYTHONPATH: ${PYTHONPATH}"
+        fi
+
+        mkdir -p results
+        LINT_PATHS="${{inputs.lint-paths}}"
+        if [ -z "${LINT_PATHS}" ]; then
+          LINT_PATHS="./bin/user/${{inputs.module-name}}.py"
+        fi
+
+        set +e
+        pylint ${LINT_PATHS} -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee results/pylint.txt
+        status=${PIPESTATUS[0]}
+        set -e
+
+        echo "pylint exit code: ${status}"
+        if [ "${{inputs.lint-fail}}" == "true" ] && [ "${status}" != "0" ]; then
+          exit "${status}"
+        fi
+
+    - name: Lint with flake8
+      if: ${{inputs.lint &&
+            inputs.os-version == inputs.latest-os-version &&
+            inputs.python-version == inputs.latest-python-version &&
+            inputs.weewx-version == inputs.latest-weewx-version}}
+      shell: bash
       run: |
         source .venv/bin/activate
 
         mkdir -p results
-        pylint ./bin/user/${{inputs.module-name}}.py -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee results/pylint.txt
+        LINT_PATHS="${{inputs.lint-paths}}"
+        if [ -z "${LINT_PATHS}" ]; then
+          LINT_PATHS="./bin/user/${{inputs.module-name}}.py"
+        fi
+
+        set +e
+        flake8 ${LINT_PATHS} | tee results/flake8.txt
+        status=${PIPESTATUS[0]}
+        set -e
+
+        echo "flake8 exit code: ${status}"
+        if [ "${{inputs.lint-fail}}" == "true" ] && [ "${status}" != "0" ]; then
+          exit "${status}"
+        fi
     
     - name: Unit tests
       if: ${{inputs.unit-test}}
