@@ -54,10 +54,6 @@ on:
         required: true
         type: string
         description: ''
-      lint:
-        required: true
-        type: boolean
-        description: 'Controls if linting is performed.'
       lint-fail:
         required: false
         type: boolean
@@ -114,7 +110,7 @@ on:
 jobs:
   build:
     # '*' marks the job that runs lint (same condition as the lint steps below).
-    name: ${{ (inputs.lint && inputs.os-version == inputs.latest-os-version && inputs.python-version == inputs.latest-python-version && inputs.weewx-version == inputs.latest-weewx-version) && '* ' || '' }}${{ inputs.os-version}} ${{ inputs.python-version }} ${{ inputs.weewx-version }}
+    name: ${{ (inputs.os-version == inputs.latest-os-version && inputs.python-version == inputs.latest-python-version && inputs.weewx-version == inputs.latest-weewx-version) && '* ' || '' }}${{ inputs.os-version}} ${{ inputs.python-version }} ${{ inputs.weewx-version }}
     runs-on: ${{ inputs.os-version}}
 
     steps:
@@ -134,7 +130,8 @@ jobs:
         echo "INPUT: weewx-extension:       ${{inputs.weewx-extension}}"
         echo "INPUT: weewx-extension-ver:   ${{inputs.weewx-extension-ver}}"
         echo "INPUT: artifact-name-suffix:  ${{inputs.artifact-name-suffix}}"
-        echo "INPUT: lint:                  ${{inputs.lint}}"
+        echo "INPUT: lint-fail:             ${{inputs.lint-fail}}"
+        echo "INPUT: lint-paths:            ${{inputs.lint-paths}}"
         echo "INPUT: unit-test:             ${{inputs.unit-test}}"
         echo "INPUT: function-test:         ${{inputs.function-test}}"
         echo "INPUT: integration-test:      ${{inputs.integration-test}}"
@@ -218,8 +215,7 @@ jobs:
         fi
 
     - name: Lint with pylint
-      if: ${{inputs.lint &&
-            inputs.os-version == inputs.latest-os-version &&
+      if: ${{inputs.os-version == inputs.latest-os-version &&
             inputs.python-version == inputs.latest-python-version &&
             inputs.weewx-version == inputs.latest-weewx-version}}
       shell: bash
@@ -254,8 +250,7 @@ jobs:
         fi
 
     - name: Lint with flake8
-      if: ${{inputs.lint &&
-            inputs.os-version == inputs.latest-os-version &&
+      if: ${{inputs.os-version == inputs.latest-os-version &&
             inputs.python-version == inputs.latest-python-version &&
             inputs.weewx-version == inputs.latest-weewx-version}}
       shell: bash

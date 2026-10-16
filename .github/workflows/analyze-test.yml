@@ -27,10 +27,6 @@ on:
         type: string
         default: 'master'
         description: 'The WeeWX extension version.'
-      lint:
-        required: false
-        type: boolean
-        default: true
       lint-fail:
         required: false
         type: boolean
@@ -126,7 +122,6 @@ jobs:
             weewx-extension: ${{inputs.weewx-extension}}
             weewx-extension-ver: ${{inputs.weewx-extension-ver}}
             artifact-name-suffix: ${{inputs.artifact-name-suffix}}
-            lint: ${{inputs.lint}}
             lint-fail: ${{inputs.lint-fail}}
             lint-paths: ${{inputs.lint-paths}}
             unit-test: ${{inputs.unit-test}}
