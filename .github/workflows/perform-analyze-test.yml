@@ -113,6 +113,11 @@ jobs:
     name: ${{ (inputs.os-version == inputs.latest-os-version && inputs.python-version == inputs.latest-python-version && inputs.weewx-version == inputs.latest-weewx-version) && '* ' || '' }}${{ inputs.os-version}} ${{ inputs.python-version }} ${{ inputs.weewx-version }}
     runs-on: ${{ inputs.os-version}}
 
+    env:
+      # Load the file weewx_test_bootstrap on every pytest run.
+      # weewx_test_bootstrap is created in the "Create shared test bootstrap" step below.
+      PYTEST_ADDOPTS: -p weewx_test_bootstrap
+
     steps:
     - uses: actions/checkout@v5
     - name: Log inputs
@@ -214,6 +219,70 @@ jobs:
           weectl extension install . --yes
         fi
 
+    # Create the file, weewx_test_bootstrap in python's site package directory
+    # This file is loaded on every pytest run using the environment variable PYTEST_ADDOPTS
+    #
+    # This purpose of this file is to make any WeeWX extensions (bin/user directory) that are not part of the checkout available to pytest.
+    # These are not added to PYTHONPATH because the station's user package is a real package.
+    # So putting it on the path would shadow the checkout's user (and make coverage report nothing).
+    # Checkout modules always win; a module that is truly absent still raises the usual ModuleNotFoundError.
+    #
+    # It accomplishes this by registering a small "finder" that sits at the back of Python's import queue. 
+    # When a pytest asks for a module that is not part of the checkout, 
+    # the finder looks in the station (~/weewx-data/bin/user) and serves the module from there.
+
+    - name: Create shared test bootstrap
+      run: |
+        source .venv/bin/activate
+
+        SITE_DIR="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+        cat > "${SITE_DIR}/weewx_test_bootstrap.py" <<'PYEOF'
+        """Shared pytest bootstrap: fall back to a WeeWX station's user modules.
+
+        Loaded for every pytest run through PYTEST_ADDOPTS=-p weewx_test_bootstrap
+        (see the job env above) and installed by perform-analyze-test.yml.
+        """
+
+        import importlib.util
+        import pathlib
+        import sys
+
+
+        class _StationUserFinder:
+            """Find user.* modules in a WeeWX station (weectl station create)."""
+
+            def __init__(self, user_dirs):
+                self.user_dirs = user_dirs
+
+            def find_spec(self, fullname, _path=None, _target=None):
+                if not fullname.startswith('user.'):
+                    return None
+                parts = fullname.split('.')[1:]
+                for user_dir in self.user_dirs:
+                    module_file = user_dir.joinpath(*parts).with_suffix('.py')
+                    if module_file.is_file():
+                        return importlib.util.spec_from_file_location(fullname, module_file)
+                    init_file = user_dir.joinpath(*parts, '__init__.py')
+                    if init_file.is_file():
+                        return importlib.util.spec_from_file_location(
+                            fullname, init_file, submodule_search_locations=[str(init_file.parent)])
+                return None
+
+
+        def _station_user_dirs():
+            # CI: ~/weewx-data (/home/runner, or root under act); next to the
+            # checkout covers a local dev station (../weewx-data, see .env).
+            roots = [pathlib.Path.home() / 'weewx-data',
+                     pathlib.Path.cwd().parent / 'weewx-data']
+            return [root / subdir
+                    for root in roots for subdir in ('bin/user', 'user')
+                    if (root / subdir).is_dir()]
+
+
+        if not any(isinstance(finder, _StationUserFinder) for finder in sys.meta_path):
+            sys.meta_path.append(_StationUserFinder(_station_user_dirs()))
+        PYEOF
+
     - name: Lint with pylint
       if: ${{inputs.os-version == inputs.latest-os-version &&
             inputs.python-version == inputs.latest-python-version &&
@@ -294,10 +363,8 @@ jobs:
       run: |
         source .venv/bin/activate
 
-        # ToDo: path veries if running local (via act) or on github
-        pytest bin/user/tests/integ --import-mode=append -o pythonpath="/home/runner/weewx-data/bin /root/weewx-data/bin" --html=results/integtests.html --self-contained-html
-
-        #pytest bin/user/tests/integ --import-mode=append -o pythonpath=/root/weewx-data/bin --html=results/integtests.html --self-contained-html
+        export PYTHONPATH=bin:$PYTHONPATH
+        pytest bin/user/tests/integ --import-mode=append --html=results/integtests.html --self-contained-html
 
     - name: E2E tests
       if: ${{inputs.e2e-test}}
