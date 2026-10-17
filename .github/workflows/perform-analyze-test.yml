@@ -298,7 +298,8 @@ jobs:
         # 'unable to import'.
         STATION_USER_DIR="$(find "${HOME}/weewx-data" -maxdepth 3 -type d -name user 2>/dev/null | head -1)"
         if [ -n "${STATION_USER_DIR}" ]; then
-          export PYTHONPATH="$(dirname "${STATION_USER_DIR}")"
+          PYTHONPATH="$(dirname "${STATION_USER_DIR}")"
+          export PYTHONPATH
           echo "PYTHONPATH: ${PYTHONPATH}"
         fi
 
