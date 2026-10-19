@@ -10,12 +10,12 @@ nav_order: 2
 
 In the workflows-template directory are some rudimentary templates that can be used when setting up a new GitHub repository.
 
-### analyze-test
+### run-analyze-test
 
-### analyze-test-matrix
+### run-analyze-test-matrix
 
 ### stale
 
 ### versioning
 
-### fetch
+### run-fetch

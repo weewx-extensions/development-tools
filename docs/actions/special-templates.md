@@ -8,10 +8,10 @@ nav_order: 3
 
 ## Templates to access pre-released workflows
 
-### local-analyze-test
+### run-local-analyze-test
 
-### local-analyze-test-matrix
+### run-local-analyze-test-matrix
 
-### master-analyze-test
+### run-master-analyze-test
 
-### master-analyze-test-matrix
+### run-master-analyze-test-matrix
