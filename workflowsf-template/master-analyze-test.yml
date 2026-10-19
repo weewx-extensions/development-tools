@@ -16,4 +16,5 @@ jobs:
       e2e-test: false
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
