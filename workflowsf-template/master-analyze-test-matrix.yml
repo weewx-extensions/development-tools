@@ -14,7 +14,6 @@ jobs:
       function-test: false
       integration-test: false
       e2e-test: false
-      #flake-extra-parms: '--exclude tests'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
