@@ -8,7 +8,7 @@ nav_order: 2
 
 ## Rudimentary templates
 
-In the workflows-template directory are some rudimentatyr templates that can be used when setting up a new GitHub repository.
+In the workflows-template directory are some rudimentary templates that can be used when setting up a new GitHub repository.
 
 ### analyze-test
 
