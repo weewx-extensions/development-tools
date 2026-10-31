@@ -42,13 +42,24 @@ on:
         required: true
         type: string
         description: 'Additional OS packages to be installed.'
+      weewx-extensions:
+        required: false
+        type: string
+        default: ''
+        description: |
+          The WeeWX extensions the module needs, one per line, as '<url> [version]'.
+          The version defaults to 'master'.
+      # Deprecated, use weewx-extensions.
       weewx-extension:
-        required: true
+        required: false
         type: string
+        default: ''
         description: 'The required WeeWX extension.'
+      # Deprecated, use weewx-extensions.
       weewx-extension-ver:
-        required: true
+        required: false
         type: string
+        default: ''
         description: 'The required WeeWX extension version.'
       artifact-name-suffix:
         required: true
@@ -198,23 +209,34 @@ jobs:
 
         weectl station create --no-prompt
 
-    # As of 8/10/2026, only weewx-loopdata extension is needed for integration tests.
-    # ToDo: Support multiple extensions
+    # The extensions the module needs, installed before the checkout under test.
     # ToDo: Support matrix of versions for a given extension
     - name: Install necessary WeeWX extensions (${{ inputs.weewx-version }})
+      env:
+        WEEWX_EXTENSIONS: ${{ inputs.weewx-extensions }}
+        WEEWX_EXTENSION: ${{ inputs.weewx-extension }}
+        WEEWX_EXTENSION_VER: ${{ inputs.weewx-extension-ver }}
       run: |
-        WEEWX_EXTENSION=${{inputs.weewx-extension}}
-        WEEWX_EXTENSION_VER=${{inputs.weewx-extension-ver}}
-
+        EXTENSIONS="${WEEWX_EXTENSIONS}"
         if [ "${WEEWX_EXTENSION}" != "" ]; then
+          EXTENSIONS="${EXTENSIONS}"$'\n'"${WEEWX_EXTENSION} ${WEEWX_EXTENSION_VER}"
+        fi
+
+        if [ -n "${EXTENSIONS//[[:space:]]/}" ]; then
           source .venv/bin/activate
 
-          if [ "${WEEWX_EXTENSION_VER}" == "master" ]; then
-            EXTENSION="$WEEWX_EXTENSION/archive/master.zip"
-          else
-            EXTENSION="$WEEWX_EXTENSION/archive/refs/tags/v$WEEWX_EXTENSION_VER.zip"
-          fi
-          weectl extension install $EXTENSION --yes
+          while read -r EXTENSION EXTENSION_VER; do
+            if [ -z "${EXTENSION}" ]; then
+              continue
+            fi
+
+            if [ -z "${EXTENSION_VER}" ] || [ "${EXTENSION_VER}" == "master" ]; then
+              ARCHIVE="${EXTENSION%/}/archive/master.zip"
+            else
+              ARCHIVE="${EXTENSION%/}/archive/refs/tags/v${EXTENSION_VER}.zip"
+            fi
+            weectl extension install "${ARCHIVE}" --yes
+          done <<< "${EXTENSIONS}"
 
           weectl extension install . --yes
         fi

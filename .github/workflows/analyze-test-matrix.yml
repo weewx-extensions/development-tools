@@ -17,6 +17,13 @@ on:
         type: string
         default: ''
         description: 'Additional OS packages to be installed.'
+      weewx-extensions:
+        required: false
+        type: string
+        default: ''
+        description: |
+          The WeeWX extensions the module needs, one per line, as '<url> [version]'.
+          The version defaults to 'master'.
       weewx-extension:
         required: false
         type: string
@@ -141,6 +148,7 @@ jobs:
       latest-weewx-version: ${{inputs.latest-weewx-version}}
       pip-list: ${{inputs.pip-list}}
       package-list: ${{inputs.package-list}}
+      weewx-extensions: ${{inputs.weewx-extensions}}
       weewx-extension: ${{inputs.weewx-extension}}
       weewx-extension-ver: ${{inputs.weewx-extension-ver}}
       artifact-name-suffix: ${{inputs.artifact-name-suffix}}
