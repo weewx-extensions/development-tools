@@ -34,7 +34,13 @@ run_tests() {
     local suite=$1
     shift
 
-    local pytest_args=("bin/user/tests/${suite}" "$@")
+    local suite_path="bin/user/tests/${suite}"
+    if [ ! -d "${suite_path}" ]; then
+        echo "Skipping the ${suite} tests, ${suite_path} does not exist."
+        return 0
+    fi
+
+    local pytest_args=("${suite_path}" "$@")
 
     if [ "${WEEWX_HTML}" == "1" ]; then
         mkdir -p "${WEEWX_RESULTS_DIR}"
