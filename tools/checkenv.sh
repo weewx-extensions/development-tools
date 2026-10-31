@@ -66,7 +66,7 @@ fi
 if command -v weectl >/dev/null 2>&1; then
     ok "weectl"
 else
-    fail "weectl (ships with the weewx install)"
+    note "weectl is not on PATH (it comes with an installed weewx)"
 fi
 
 modules='configobj coverage flake8 flake8_cognitive_complexity mock pylint pytest'
