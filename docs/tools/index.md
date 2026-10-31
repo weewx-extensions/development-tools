@@ -67,8 +67,8 @@ the extensions it depends on.
 
 ## Shared config files
 
-`.pylintrc`, `.flake8`, `.coveragerc`, and `requirements.txt` are the same in every extension
-repository. The canonical copies live in `development-tools/config`:
+`.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`, and `requirements.txt` are the same in
+every extension repository. The canonical copies live in `development-tools/config`:
 
 ```bash
 configs.sh           # copy them into this repository
@@ -78,11 +78,16 @@ configs.sh --check   # report the ones that differ
 `verify.sh` runs the check, and the analyze-test workflow compares the repository's copies with
 `config-ref` (default `v6`) so a stale copy cannot reach CI.
 
+The tests are linted as well, with `.pylintrc-tests`, which turns off the conventions that tests
+legitimately break (docstrings, naming, mocks, complexity). `lint.sh` covers
+`bin/user/tests` by default; set `WEEWX_TEST_LINT_PATHS=''` to skip it.
+
 ## Outputs
 
 Reports go to `WEEWX_RESULTS_DIR`, the way CI archives them:
 
-- `results/pylint.txt`, `results/flake8.txt`
+- `results/pylint.txt`, `results/pylint-tests.txt`
+- `results/flake8.txt`, `results/flake8-tests.txt`
 - `results/unittests.html`, `results/functests.html`, `results/integtests.html`, `results/e2etests.html` (with `WEEWX_HTML=1`)
 - `results/coverage/index.html`
 - `coverage.xml` in the repository root, for the coverage providers
