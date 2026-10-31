@@ -369,6 +369,18 @@ jobs:
         status=${PIPESTATUS[0]}
         set -e
 
+        if [ -d ./bin/user/tests ] && [ -f .pylintrc-tests ]; then
+          set +e
+          pylint ./bin/user/tests -r n --rcfile .pylintrc-tests --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee results/pylint-tests.txt
+          tests_status=${PIPESTATUS[0]}
+          set -e
+
+          echo "pylint (tests) exit code: ${tests_status}"
+          if [ "${tests_status}" != "0" ]; then
+            status=${tests_status}
+          fi
+        fi
+
         echo "pylint exit code: ${status}"
         if [ "${{inputs.lint-fail}}" == "true" ] && [ "${status}" != "0" ]; then
           exit "${status}"
@@ -392,6 +404,18 @@ jobs:
         flake8 ${LINT_PATHS} | tee results/flake8.txt
         status=${PIPESTATUS[0]}
         set -e
+
+        if [ -d ./bin/user/tests ]; then
+          set +e
+          flake8 ./bin/user/tests | tee results/flake8-tests.txt
+          tests_status=${PIPESTATUS[0]}
+          set -e
+
+          echo "flake8 (tests) exit code: ${tests_status}"
+          if [ "${tests_status}" != "0" ]; then
+            status=${tests_status}
+          fi
+        fi
 
         echo "flake8 exit code: ${status}"
         if [ "${{inputs.lint-fail}}" == "true" ] && [ "${status}" != "0" ]; then

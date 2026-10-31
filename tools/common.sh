@@ -14,6 +14,8 @@ WEEWX_PYTHONPATH=${WEEWX_PYTHONPATH:-bin}
 WEEWX_RESULTS_DIR=${WEEWX_RESULTS_DIR:-results}
 WEEWX_HTML=${WEEWX_HTML:-0}
 WEEWX_TEST_SUITES=${WEEWX_TEST_SUITES:-unit func integ e2e}
+# The tests are linted with .pylintrc-tests; set to '' to skip them.
+WEEWX_TEST_LINT_PATHS=${WEEWX_TEST_LINT_PATHS-bin/user/tests}
 
 if [ -z "${WEEWX_LINT_PATHS:-}" ]; then
     if [ -z "${WEEWX_MODULE_NAME:-}" ]; then
