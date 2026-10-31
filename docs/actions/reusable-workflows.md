@@ -24,6 +24,22 @@ By default it will run code coverage but not invoke any of the analysis 'provide
 A 'wrapper' for the perform-analyze-test workflow that runs the steps against a matrix of OS and Python versions with the 'latest' WeeWX version.
 It will run code coveraage and invoke the analysis 'providers' when the matrix invocation is with the 'latest' OS and Python versions.
 
+### Required WeeWX extensions
+
+`weewx-extensions` lists the extensions the module needs, one per line, as `<url> [version]`.
+The version defaults to `master`; any other value is a release tag, without the `v`.
+
+```yaml
+    with:
+      weewx-extensions: |
+        https://github.com/chaunceygardiner/weewx-loopdata/ 7.0
+        https://github.com/weewx-mqtt/publish/
+```
+
+The extensions are installed into the station before the checkout under test, so a module
+can use another extension's modules without shipping a copy.
+`weewx-extension` and `weewx-extension-ver` still install a single extension.
+
 ## Reusable workflows to manage repositories
 
 ### stale

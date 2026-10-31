@@ -12,9 +12,7 @@ Run them from the root of an extension repository, after sourcing its `.devenv`:
 
 ```bash
 source .devenv
-checkenv.sh
-lint.sh
-alltests.sh
+verify.sh
 ```
 
 `.devenv` puts `$WEEWX_TOOL_PATH` on `PATH`, so the scripts can be run by name.
@@ -23,6 +21,7 @@ alltests.sh
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, and `alltests.sh`, reporting every step's result. | - |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
