@@ -40,6 +40,13 @@ The extensions are installed into the station before the checkout under test, so
 can use another extension's modules without shipping a copy.
 `weewx-extension` and `weewx-extension-ver` still install a single extension.
 
+### Shared config files
+
+The lint and coverage settings live in `development-tools/config` and are copied into each
+repository. Before linting, the workflow compares the repository's `.pylintrc`, `.flake8`,
+`.coveragerc`, and `requirements.txt` with the canonical copies at `config-ref` (default `v6`),
+so a stale copy fails the build. If the ref has no `config` directory, the check is skipped.
+
 ## Reusable workflows to manage repositories
 
 ### stale

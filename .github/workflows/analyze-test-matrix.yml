@@ -80,6 +80,11 @@ on:
         required: false
         type: boolean
         default: true
+      config-ref:
+        required: false
+        type: string
+        default: 'v6'
+        description: 'The development-tools ref the shared config files are read from.'
       # These are not expected to be passed in
       # They are here so that I can define the values once
       latest-os-version:
@@ -163,6 +168,7 @@ jobs:
       codecov-upload: ${{inputs.codecov-upload}}
       codacy-upload: ${{inputs.codacy-upload}}
       sonar-scan: ${{inputs.sonar-scan}}
+      config-ref: ${{inputs.config-ref}}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}

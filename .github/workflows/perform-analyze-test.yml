@@ -110,6 +110,11 @@ on:
         required: true
         type: boolean
         description: 'Controls if SonarQube scan is performed'
+      config-ref:
+        required: false
+        type: string
+        default: 'v6'
+        description: 'The development-tools ref the shared config files are read from.'
     secrets:
       CODECOV_TOKEN:
         required: true
@@ -157,6 +162,34 @@ jobs:
         echo "INPUT: codecov-upload:        ${{inputs.codecov-upload}}"
         echo "INPUT: codacy-upload:         ${{inputs.codacy-upload}}"
         echo "INPUT: sonar-scan:            ${{inputs.sonar-scan}}"
+        echo "INPUT: config-ref:            ${{inputs.config-ref}}"
+
+    - name: Check the shared config files
+      if: ${{inputs.os-version == inputs.latest-os-version &&
+            inputs.python-version == inputs.latest-python-version &&
+            inputs.weewx-version == inputs.latest-weewx-version}}
+      shell: bash
+      run: |
+        CONFIG_REF="${{inputs.config-ref}}"
+        BASE="https://raw.githubusercontent.com/weewx-extensions/development-tools/${CONFIG_REF}/config"
+        TEMP_DIR="${RUNNER_TEMP:-/tmp}"
+        status=0
+        for config in .pylintrc .flake8 .coveragerc requirements.txt; do
+          if [ ! -f "${config}" ]; then
+            continue
+          fi
+
+          if ! curl -fsSL "${BASE}/${config}" -o "${TEMP_DIR}/shared-${config}"; then
+            echo "${config} is not available at ${BASE}, skipping the check."
+            continue
+          fi
+
+          if ! diff -u "${TEMP_DIR}/shared-${config}" "${config}"; then
+            echo "${config} differs from ${BASE}/${config}"
+            status=1
+          fi
+        done
+        exit "${status}"
 
     - name: Set up Python ${{ inputs.python-version }}
       uses: actions/setup-python@v6

@@ -21,7 +21,8 @@ verify.sh
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, and `alltests.sh`, reporting every step's result. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `configs.sh --check`, and `alltests.sh`, reporting every step's result. | - |
+| `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
@@ -63,6 +64,19 @@ fi
 
 `plugin-loopdata` also adds the station's user package (`~/weewx-data/bin`), which provides
 the extensions it depends on.
+
+## Shared config files
+
+`.pylintrc`, `.flake8`, `.coveragerc`, and `requirements.txt` are the same in every extension
+repository. The canonical copies live in `development-tools/config`:
+
+```bash
+configs.sh           # copy them into this repository
+configs.sh --check   # report the ones that differ
+```
+
+`verify.sh` runs the check, and the analyze-test workflow compares the repository's copies with
+`config-ref` (default `v6`) so a stale copy cannot reach CI.
 
 ## Outputs
 
