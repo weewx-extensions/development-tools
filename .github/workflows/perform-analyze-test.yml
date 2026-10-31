@@ -174,7 +174,7 @@ jobs:
         BASE="https://raw.githubusercontent.com/weewx-extensions/development-tools/${CONFIG_REF}/config"
         TEMP_DIR="${RUNNER_TEMP:-/tmp}"
         status=0
-        for config in .pylintrc .flake8 .coveragerc requirements.txt; do
+        for config in .pylintrc .pylintrc-tests .flake8 .coveragerc .codacy.yaml requirements.txt; do
           if [ ! -f "${config}" ]; then
             continue
           fi
@@ -370,6 +370,9 @@ jobs:
         set -e
 
         if [ -d ./bin/user/tests ] && [ -f .pylintrc-tests ]; then
+          # The tests import user.* from the checkout, not the station.
+          PYTHONPATH="bin:${PYTHONPATH}"
+          export PYTHONPATH
           set +e
           pylint ./bin/user/tests -r n --rcfile .pylintrc-tests --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee results/pylint-tests.txt
           tests_status=${PIPESTATUS[0]}

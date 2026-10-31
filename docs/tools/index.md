@@ -67,8 +67,8 @@ the extensions it depends on.
 
 ## Shared config files
 
-`.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`, and `requirements.txt` are the same in
-every extension repository. The canonical copies live in `development-tools/config`:
+`.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`, `.codacy.yaml`, and `requirements.txt`
+are the same in every extension repository. The canonical copies live in `development-tools/config`:
 
 ```bash
 configs.sh           # copy them into this repository
@@ -79,7 +79,8 @@ configs.sh --check   # report the ones that differ
 `config-ref` (default `v6`) so a stale copy cannot reach CI.
 
 The tests are linted as well, with `.pylintrc-tests`, which turns off the conventions that tests
-legitimately break (docstrings, naming, mocks, complexity). `lint.sh` covers
+legitimately break (docstrings, naming, mocks, complexity). `.codacy.yaml` keeps Codacy from
+re-linting the tests with its own defaults. `lint.sh` covers
 `bin/user/tests` by default; set `WEEWX_TEST_LINT_PATHS=''` to skip it.
 
 ## Outputs

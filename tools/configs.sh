@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CONFIG_DIR="$(dirname "$(readlink -f "$0")")/../config"
-CONFIGS='.pylintrc .pylintrc-tests .flake8 .coveragerc requirements.txt'
+CONFIGS='.pylintrc .pylintrc-tests .flake8 .coveragerc .codacy.yaml requirements.txt'
 
 check=0
 if [ "${1:-}" == '--check' ]; then

@@ -44,7 +44,7 @@ can use another extension's modules without shipping a copy.
 
 The lint and coverage settings live in `development-tools/config` and are copied into each
 repository. Before linting, the workflow compares the repository's `.pylintrc`, `.pylintrc-tests`,
-`.flake8`, `.coveragerc`, and `requirements.txt` with the canonical copies at `config-ref`
+`.flake8`, `.coveragerc`, `.codacy.yaml`, and `requirements.txt` with the canonical copies at `config-ref`
 (default `v6`), so a stale copy fails the build. If the ref has no `config` directory, the check
 is skipped.
 
