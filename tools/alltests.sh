@@ -1,20 +1,22 @@
 #! /bin/bash
 #
-#    Copyright (c) 2025 Rich Bell <bellrichm@gmail.com>
+#    Copyright (c) 2026 Rich Bell <bellrichm@gmail.com>
 #
 #    See the file LICENSE.txt for your full rights.
 #
-export PYENV_VERSION=$WEEWX_PYENV_VERSION
-export PYTHONPATH=$WEEWX_PYTHONPATH
+#    Run each suite in turn, stopping at the first failure like CI.
+#
+set -euo pipefail
 
-echo "**** Running UNIT Tests ****"
-pytest bin/user/tests/unit
+. "$(dirname "$(readlink -f "$0")")/common.sh"
 
-echo "**** Running FUNC Tests ****"
-pytest bin/user/tests/func
-
-echo "**** Running INTEG Tests ****"
-pytest bin/user/tests/integ
-
-echo "**** Running E2E Tests ****"
-pytest bin/user/tests/e2e
+# The suite list is intentionally unquoted, it holds several names.
+# shellcheck disable=SC2086
+for suite in ${WEEWX_TEST_SUITES}; do
+    echo "**** Running ${suite^^} Tests ****"
+    if [ "${suite}" == "integ" ]; then
+        run_tests "${suite}" --import-mode=append
+    else
+        run_tests "${suite}"
+    fi
+done
