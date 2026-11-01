@@ -26,6 +26,13 @@ for config in ${CONFIGS}; do
     fi
 
     if [ "${check}" == "1" ]; then
+        # The workflow skips a config the repository does not carry; mirror that
+        # so a local run of verify.sh agrees with CI.
+        if [ ! -f "${config}" ]; then
+            echo "${config} is not in this repository, skipping the check."
+            continue
+        fi
+
         if ! diff -u "${CONFIG_DIR}/${config}" "${config}"; then
             echo "${config} differs from ${CONFIG_DIR}/${config}"
             status=1

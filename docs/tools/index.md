@@ -38,6 +38,10 @@ verify.sh
 | `watch*.sh` | Re-runs a suite when its tests or module change, using `inotifywait`. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
 
+`configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so
+`verify.sh` passes in a repository that keeps only some of them. `development-tools` itself is one:
+it keeps `.flake8` at its root and the rest under `config/`.
+
 `actionlint.sh` treats `tools/actionlint` as a cache, not a vendored file: it is in `.gitignore`,
 the cached binary is used only when it matches the pinned release, an actionlint on `PATH` stands in
 when nothing is cached, and otherwise the release is downloaded. Offline, the step reports and
