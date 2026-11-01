@@ -79,14 +79,24 @@ The tests are linted too, using `.pylintrc-tests`, when the repository has a `bi
 directory. Captured expectations under `bin/user/tests/*/data/` are fixture data, not code, so
 `.flake8` keeps only the pyflakes checks for them.
 
-### Shared common module
+### Shared common repositories
 
-`mqttcommon.py` is copied in from
-[weewx-mqtt/mqttcommon](https://github.com/weewx-mqtt/mqttcommon) rather than edited here. The
-workflow compares `bin/user/mqttcommon.py` and `bin/user/tests/unit/test_mqttcommon.py` with
-`common-ref` (default `v1`), so a stale or hand-edited copy fails the build. If the repository
-does not vendor the module, or the ref is not available, the check is skipped. Locally, the same
-comparison is `mqttcommon.sh --check`.
+A module that several extensions share lives in its own repository (for example
+[weewx-mqtt/mqttcommon](https://github.com/weewx-mqtt/mqttcommon)) and is copied in rather than
+edited here. A repository that vendors one names its sources in the `common-repos` input, one per
+line as `<github url> <ref>`:
+
+```yaml
+    with:
+      common-repos: |
+        https://github.com/weewx-mqtt/mqttcommon v1
+```
+
+Each shared repository lists the files a consumer carries in a `common-files.txt` at its root, so
+the workflow compares exactly what it declares and fails when a copy is stale, hand edited, or
+missing. Declaring a repository is a promise to carry all of it. Locally the same comparison is
+`commonrepos.sh --check`, which reads `WEEWX_COMMON_REPOS` and looks for the sibling checkouts under
+`WEEWX_COMMON_SRC` (default `..`).
 
 ### Workflow lint
 

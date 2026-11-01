@@ -87,11 +87,13 @@ on:
         type: string
         default: 'v6'
         description: 'The development-tools ref the shared config files and tools are read from.'
-      common-ref:
+      common-repos:
         required: false
         type: string
-        default: 'v1'
-        description: 'The development-tools ref the shared mqttcommon module and its tests are read from.'
+        default: ''
+        description: |
+          The shared repositories whose files this repository vendors, one per line, as
+          '<github url> <ref>'. Each repository lists its files in a common-files.txt.
       # These are not expected to be passed in
       # They are here so that I can define the values once
       latest-os-version:
@@ -177,7 +179,7 @@ jobs:
       codacy-upload: ${{inputs.codacy-upload}}
       sonar-scan: ${{inputs.sonar-scan}}
       config-ref: ${{inputs.config-ref}}
-      common-ref: ${{inputs.common-ref}}
+      common-repos: ${{inputs.common-repos}}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}

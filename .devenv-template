@@ -1,5 +1,6 @@
 # Do not inherit settings from another repository's .devenv.
 unset WEEWX_LINT_PATHS WEEWX_LINT_FAIL WEEWX_TEST_SUITES WEEWX_HTML WEEWX_RESULTS_DIR
+unset WEEWX_COMMON_REPOS WEEWX_COMMON_SRC
 
 export WEEWX_MODULE_NAME=REPLACE_ME
 
@@ -11,6 +12,13 @@ export WEEWX_PYTHONPATH=bin
 # What the analyze-test workflow lints, its lint-paths input.
 # Defaults to bin/user/${WEEWX_MODULE_NAME}.py
 #export WEEWX_LINT_PATHS='./bin/user/REPLACE_ME.py ./bin/user/mqttcommon.py'
+
+# The shared repositories this repository vendors, its common-repos input.
+# Each one lists its files in common-files.txt.
+#export WEEWX_COMMON_REPOS='https://github.com/weewx-mqtt/mqttcommon'
+
+# Where the shared repositories' sibling checkouts are.
+#export WEEWX_COMMON_SRC=..
 
 # Which suites the analyze-test workflow runs.
 # Defaults to 'unit func integ e2e'

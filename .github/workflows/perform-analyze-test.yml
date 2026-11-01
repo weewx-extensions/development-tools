@@ -115,11 +115,13 @@ on:
         type: string
         default: 'v6'
         description: 'The development-tools ref the shared config files and tools are read from.'
-      common-ref:
+      common-repos:
         required: false
         type: string
-        default: 'v1'
-        description: 'The development-tools ref the shared mqttcommon module and its tests are read from.'
+        default: ''
+        description: |
+          The shared repositories whose files this repository vendors, one per line, as
+          '<github url> <ref>'. Each repository lists its files in a common-files.txt.
     secrets:
       # Optional: a provider that is not configured simply skips its upload.
       CODECOV_TOKEN:
@@ -169,7 +171,7 @@ jobs:
         echo "INPUT: codacy-upload:         ${{inputs.codacy-upload}}"
         echo "INPUT: sonar-scan:            ${{inputs.sonar-scan}}"
         echo "INPUT: config-ref:            ${{inputs.config-ref}}"
-        echo "INPUT: common-ref:            ${{inputs.common-ref}}"
+        echo "INPUT: common-repos:          ${{inputs.common-repos}}"
 
     - name: Check the shared config files
       if: ${{inputs.os-version == inputs.latest-os-version &&
@@ -198,39 +200,78 @@ jobs:
         done
         exit "${status}"
 
-    - name: Check the shared common module
+    - name: Check the common repositories
       if: ${{inputs.os-version == inputs.latest-os-version &&
             inputs.python-version == inputs.latest-python-version &&
             inputs.weewx-version == inputs.latest-weewx-version}}
       shell: bash
       run: |
-        # Not every extension vendors mqttcommon; those that do must carry the
-        # copies from the mqttcommon repository unchanged.
-        if [ ! -f bin/user/mqttcommon.py ]; then
-          echo "bin/user/mqttcommon.py is not vendored here, skipping the check."
+        REPOS="${{inputs.common-repos}}"
+        if [ -z "${REPOS//[[:space:]]/}" ]; then
+          echo "No common repositories are declared, skipping the check."
           exit 0
         fi
 
-        COMMON_REF="${{inputs.common-ref}}"
-        BASE="https://raw.githubusercontent.com/weewx-mqtt/mqttcommon/${COMMON_REF}"
         TEMP_DIR="${RUNNER_TEMP:-/tmp}"
         status=0
-        for common in bin/user/mqttcommon.py bin/user/tests/unit/test_mqttcommon.py; do
-          if [ ! -f "${common}" ]; then
+        while read -r url ref; do
+          if [ -z "${url}" ]; then
             continue
           fi
 
-          local_copy="${TEMP_DIR}/common-$(basename "${common}")"
-          if ! curl -fsSL "${BASE}/${common}" -o "${local_copy}"; then
-            echo "${common} is not available at ${BASE}, skipping the check."
-            continue
-          fi
+          case "${url}" in
+            https://github.com/*) ;;
+            *)
+              echo "::error::${url} is not a github.com url."
+              status=1
+              continue
+              ;;
+          esac
 
-          if ! diff -u "${local_copy}" "${common}"; then
-            echo "${common} differs from ${BASE}/${common}"
+          if [ -z "${ref}" ]; then
+            echo "::error::${url} needs a ref, for example '${url} v1'."
             status=1
+            continue
           fi
-        done
+
+          slug="${url#https://github.com/}"
+          slug="${slug%/}"
+          slug="${slug%.git}"
+          BASE="https://raw.githubusercontent.com/${slug}/${ref}"
+          MANIFEST="${TEMP_DIR}/common-${slug//\//-}.txt"
+
+          # The repository lists what a consumer copies, so this stays a
+          # comparison against the source of truth.
+          if ! curl -fsSL "${BASE}/common-files.txt" -o "${MANIFEST}"; then
+            echo "::error::${url} has no common-files.txt at ${ref}."
+            status=1
+            continue
+          fi
+
+          while read -r common; do
+            case "${common}" in
+              ''|'#'*) continue ;;
+            esac
+
+            if [ ! -f "${common}" ]; then
+              echo "::error::${url} declares ${common}, but this repository does not vendor it."
+              status=1
+              continue
+            fi
+
+            local_copy="${TEMP_DIR}/common-$(basename "${common}")"
+            if ! curl -fsSL "${BASE}/${common}" -o "${local_copy}"; then
+              echo "::error::${common} is not available at ${BASE}."
+              status=1
+              continue
+            fi
+
+            if ! diff -u "${local_copy}" "${common}"; then
+              echo "${common} differs from ${BASE}/${common}"
+              status=1
+            fi
+          done < "${MANIFEST}"
+        done <<< "${REPOS}"
         exit "${status}"
 
     - name: Lint the workflows

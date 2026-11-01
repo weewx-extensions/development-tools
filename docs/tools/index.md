@@ -21,11 +21,11 @@ verify.sh
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `configs.sh`, `mqttcommon.sh`, and `alltests.sh`. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`. | - |
 | `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | Lint the workflows |
 | `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
-| `mqttcommon.sh` | Copies `mqttcommon` and its tests from the `mqttcommon` repository; `--check` reports drift. | Check the common module |
+| `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
@@ -60,6 +60,8 @@ The scripts read these from the environment, normally set in `.devenv`.
 | `WEEWX_PYENV_VERSION` | - | Exported as `PYENV_VERSION` when set. |
 | `WEEWX_LINT_PATHS` | `bin/user/${WEEWX_MODULE_NAME}.py` | What `lint.sh` checks, the workflow's `lint-paths` input. |
 | `WEEWX_LINT_FAIL` | `1` | With `0`, `lint.sh` reports the findings without failing, the workflow's `lint-fail` input. |
+| `WEEWX_COMMON_REPOS` | - | The shared repositories this repository vendors, the workflow's `common-repos` input. |
+| `WEEWX_COMMON_SRC` | `..` | Where the shared repositories' sibling checkouts are. |
 | `WEEWX_TEST_SUITES` | `unit func integ e2e` | What `alltests.sh` runs. |
 | `WEEWX_HTML` | `0` | With `1`, writes the HTML test reports. Needs `pytest-html`. |
 | `WEEWX_RESULTS_DIR` | `results` | Where the reports are written. |
@@ -96,22 +98,22 @@ legitimately break (docstrings, naming, mocks, complexity). `.codacy.yaml` keeps
 re-linting the tests with its own defaults. `lint.sh` covers
 `bin/user/tests` by default; set `WEEWX_TEST_LINT_PATHS=''` to skip it.
 
-## Shared common module
+## Shared common repositories
 
-`mqttcommon.py` — the paho MQTT code shared by the `weewx-mqtt` extensions — has its own
-repository, [weewx-mqtt/mqttcommon](https://github.com/weewx-mqtt/mqttcommon). The extensions still
-ship a copy (their `install.py` lists it), so the file stays in each repository; the copy is pulled
-from the source of truth rather than edited:
+A module shared by several extensions, such as `mqttcommon.py` for the `weewx-mqtt` ones, lives in
+its own repository and is copied in rather than edited. The extensions still ship the copy (their
+`install.py` lists it), so the file stays in each repository and is pulled from the source of truth:
 
 ```bash
-mqttcommon.sh           # copy the module and its tests in
-mqttcommon.sh --check   # report the ones that differ
+commonrepos.sh           # copy the shared files in
+commonrepos.sh --check   # report the ones that differ
 ```
 
-`mqttcommon.sh` resolves the source as a sibling checkout (`../mqttcommon`); set `MQTTCOMMON_SRC` to
-point elsewhere, for example to test an uncommitted change against a consumer. `verify.sh` runs the
-check, and the analyze-test workflow compares the copies with `common-ref` (default `v1`). The
-check is skipped in repositories that do not vendor the module.
+`commonrepos.sh` reads `WEEWX_COMMON_REPOS` (the same `<url> <ref>` lines as the workflow's `common-repos`
+input) and looks for sibling checkouts under `WEEWX_COMMON_SRC` (default `..`); set that to point
+elsewhere, for example to test an uncommitted change against a consumer. Each repository lists its
+files in its own `common-files.txt`. `verify.sh` runs the check, and the analyze-test workflow
+compares the copies at the declared ref; a repository that declares nothing is skipped.
 
 ## Outputs
 

@@ -34,7 +34,7 @@ run lint "${TOOLS_DIR}/lint.sh"
 run actionlint "${TOOLS_DIR}/actionlint.sh"
 run refs "${TOOLS_DIR}/refs.sh" --check
 run configs "${TOOLS_DIR}/configs.sh" --check
-run mqttcommon "${TOOLS_DIR}/mqttcommon.sh" --check
+run commonrepos "${TOOLS_DIR}/commonrepos.sh" --check
 run alltests "${TOOLS_DIR}/alltests.sh"
 
 if [ "${status}" -ne 0 ]; then
