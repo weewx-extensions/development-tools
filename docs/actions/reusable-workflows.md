@@ -55,7 +55,8 @@ repository. Before linting, the workflow compares the repository's `.pylintrc`, 
 is skipped.
 
 The tests are linted too, using `.pylintrc-tests`, when the repository has a `bin/user/tests`
-directory.
+directory. Captured expectations under `bin/user/tests/*/data/` are fixture data, not code, so
+`.flake8` keeps only the pyflakes checks for them.
 
 ### Shared common module
 
