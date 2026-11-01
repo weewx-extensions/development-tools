@@ -1,5 +1,5 @@
 # Do not inherit settings from another repository's .devenv.
-unset WEEWX_LINT_PATHS WEEWX_TEST_SUITES WEEWX_HTML WEEWX_RESULTS_DIR
+unset WEEWX_LINT_PATHS WEEWX_LINT_FAIL WEEWX_TEST_SUITES WEEWX_HTML WEEWX_RESULTS_DIR
 
 export WEEWX_MODULE_NAME=REPLACE_ME
 
@@ -15,6 +15,9 @@ export WEEWX_PYTHONPATH=bin
 # Which suites the analyze-test workflow runs.
 # Defaults to 'unit func integ e2e'
 #export WEEWX_TEST_SUITES='unit func integ e2e'
+
+# Report the lint findings instead of failing, the workflow's lint-fail input.
+#export WEEWX_LINT_FAIL=0
 
 # Write the HTML test reports the workflow archives. Needs pytest-html.
 #export WEEWX_HTML=1

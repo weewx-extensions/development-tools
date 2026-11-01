@@ -27,7 +27,7 @@ verify.sh
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `mqttcommon.sh` | Copies `mqttcommon` and its tests from the `mqttcommon` repository; `--check` reports drift. | Check the common module |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
-| `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports. | Lint with pylint / flake8 |
+| `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
 | `functests.sh` | Runs `bin/user/tests/func`. | Function tests |
 | `integtests.sh` | Runs `bin/user/tests/integ` with `--import-mode=append`. | Integration tests |
@@ -55,6 +55,7 @@ The scripts read these from the environment, normally set in `.devenv`.
 | `WEEWX_PYTHONPATH` | `bin` | `PYTHONPATH` for the tests. With weewx installed, `bin` is enough. |
 | `WEEWX_PYENV_VERSION` | - | Exported as `PYENV_VERSION` when set. |
 | `WEEWX_LINT_PATHS` | `bin/user/${WEEWX_MODULE_NAME}.py` | What `lint.sh` checks, the workflow's `lint-paths` input. |
+| `WEEWX_LINT_FAIL` | `1` | With `0`, `lint.sh` reports the findings without failing, the workflow's `lint-fail` input. |
 | `WEEWX_TEST_SUITES` | `unit func integ e2e` | What `alltests.sh` runs. |
 | `WEEWX_HTML` | `0` | With `1`, writes the HTML test reports. Needs `pytest-html`. |
 | `WEEWX_RESULTS_DIR` | `results` | Where the reports are written. |

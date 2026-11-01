@@ -33,4 +33,9 @@ if [ -n "${WEEWX_TEST_LINT_PATHS}" ] && [ -d "${WEEWX_TEST_LINT_PATHS}" ] && [ -
     flake8 ${WEEWX_TEST_LINT_PATHS} | tee "${WEEWX_RESULTS_DIR}/flake8-tests.txt" || status=$?
 fi
 
+if [ "${WEEWX_LINT_FAIL}" != "1" ]; then
+    echo "WEEWX_LINT_FAIL is not 1, reporting the findings without failing."
+    exit 0
+fi
+
 exit "${status}"

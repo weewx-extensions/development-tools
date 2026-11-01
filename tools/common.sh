@@ -7,12 +7,15 @@
 #    Defaults shared by the tools scripts. Sourced, not executed.
 #
 #    The settings mirror the repository's analyze-test workflow inputs.
-#    WEEWX_MODULE_NAME, WEEWX_LINT_PATHS, WEEWX_TEST_SUITES, WEEWX_HTML,
-#    WEEWX_RESULTS_DIR, and WEEWX_PYTHONPATH are normally set in .devenv.
+#    WEEWX_MODULE_NAME, WEEWX_LINT_PATHS, WEEWX_LINT_FAIL, WEEWX_TEST_SUITES,
+#    WEEWX_HTML, WEEWX_RESULTS_DIR, and WEEWX_PYTHONPATH are normally set in
+#    .devenv.
 
 WEEWX_PYTHONPATH=${WEEWX_PYTHONPATH:-bin}
 WEEWX_RESULTS_DIR=${WEEWX_RESULTS_DIR:-results}
 WEEWX_HTML=${WEEWX_HTML:-0}
+# Mirrors the workflow's lint-fail input; 0 reports the findings without failing.
+WEEWX_LINT_FAIL=${WEEWX_LINT_FAIL:-1}
 WEEWX_TEST_SUITES=${WEEWX_TEST_SUITES:-unit func integ e2e}
 # The tests are linted with .pylintrc-tests; set to '' to skip them.
 WEEWX_TEST_LINT_PATHS=${WEEWX_TEST_LINT_PATHS-bin/user/tests}
