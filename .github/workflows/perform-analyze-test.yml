@@ -121,12 +121,13 @@ on:
         default: 'v1'
         description: 'The development-tools ref the shared mqttcommon module and its tests are read from.'
     secrets:
+      # Optional: a provider that is not configured simply skips its upload.
       CODECOV_TOKEN:
-        required: true
+        required: false
       CODACY_API_TOKEN:
-        required: true
+        required: false
       SONAR_TOKEN:
-        required: true
+        required: false
 
 jobs:
   build:
@@ -556,6 +557,44 @@ jobs:
         name: test-${{ inputs.os-version }}-${{ inputs.python-version }}-${{ inputs.weewx-version }}${{inputs.artifact-name-suffix}}
         path: results
 
+    - name: Check the upload tokens
+      # Report a provider that is enabled without a token, and publish what is
+      # usable as outputs. The tokens stay in this step and the upload steps
+      # rather than the job env, where every step would see them.
+      id: upload-tokens
+      if: ${{ !env.ACT &&
+              inputs.os-version == inputs.latest-os-version &&
+              inputs.python-version == inputs.latest-python-version &&
+              inputs.weewx-version == inputs.latest-weewx-version}}
+      shell: bash
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        # args: output name, token value, token name, input name, input value
+        set_token() {
+          local key=$1
+          local token=$2
+          local token_name=$3
+          local option=$4
+          local enabled=$5
+
+          if [ -n "${token}" ]; then
+            echo "${key}=true" >> "${GITHUB_OUTPUT}"
+            return
+          fi
+
+          echo "${key}=false" >> "${GITHUB_OUTPUT}"
+          if [ "${enabled}" == "true" ]; then
+            echo "::warning::${option} is on but ${token_name} is empty, skipping it."
+          fi
+        }
+
+        set_token codecov "${CODECOV_TOKEN}" CODECOV_TOKEN codecov-upload "${{inputs.codecov-upload}}"
+        set_token codacy "${CODACY_API_TOKEN}" CODACY_API_TOKEN codacy-upload "${{inputs.codacy-upload}}"
+        set_token sonar "${SONAR_TOKEN}" SONAR_TOKEN sonar-scan "${{inputs.sonar-scan}}"
+
     - name: Upload coverage to Coveralls 
     # Do not attempt to upload on local runs, could not get it to work
       if: ${{ !env.ACT && inputs.coveralls-upload &&
@@ -568,7 +607,7 @@ jobs:
         file: coverage.xml
 
     - name: Upload coverage to Codecov
-      if: ${{ !env.ACT && inputs.codecov-upload &&
+      if: ${{ !env.ACT && inputs.codecov-upload && steps.upload-tokens.outputs.codecov == 'true' &&
               inputs.os-version == inputs.latest-os-version &&
               inputs.python-version == inputs.latest-python-version && 
               inputs.weewx-version == inputs.latest-weewx-version}}
@@ -579,7 +618,7 @@ jobs:
         override_commit: ${{ env.ACT && 'local' || '' }}
 
     - name: Upload coverage to Codacy
-      if: ${{ !env.ACT && inputs.codacy-upload &&
+      if: ${{ !env.ACT && inputs.codacy-upload && steps.upload-tokens.outputs.codacy == 'true' &&
                 inputs.os-version == inputs.latest-os-version &&
                 inputs.python-version == inputs.latest-python-version && 
                 inputs.weewx-version == inputs.latest-weewx-version}}
@@ -594,7 +633,7 @@ jobs:
 
     - name: SonarQube Scan
       # Do not attempt to upload on local runs, sonar (free) does not support branch analysis
-      if: ${{ !env.ACT && inputs.sonar-scan && 
+      if: ${{ !env.ACT && inputs.sonar-scan && steps.upload-tokens.outputs.sonar == 'true' &&
               inputs.os-version == inputs.latest-os-version &&
               inputs.python-version == inputs.latest-python-version && 
               inputs.weewx-version == inputs.latest-weewx-version}}

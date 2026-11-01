@@ -16,13 +16,13 @@ It needs to be 'wrapped' with a workflow that passes in the necessary parameters
 ### analyze-test
 
 A 'wrapper' for the perform-analyze-test workflow that runs the steps against a single OS version, Python version, and WeeWX version.
-By default it runs agains the 'latest' OS, Python and WeeWX versions.
-By default it will run code coverage but not invoke any of the analysis 'providers'.
+By default it runs against the 'latest' OS, Python and WeeWX versions.
+By default it runs code coverage and uploads it to Codacy; Coveralls, Codecov, and Sonar are off.
 
 ### analyze-test-matrix
 
 A 'wrapper' for the perform-analyze-test workflow that runs the steps against a matrix of OS and Python versions with the 'latest' WeeWX version.
-It will run code coveraage and invoke the analysis 'providers' when the matrix invocation is with the 'latest' OS and Python versions.
+It will run code coverage and invoke the analysis 'providers' when the matrix invocation is with the 'latest' OS and Python versions.
 
 ### Required WeeWX extensions
 
@@ -39,6 +39,12 @@ The version defaults to `master`; any other value is a release tag, without the 
 The extensions are installed into the station before the checkout under test, so a module
 can use another extension's modules without shipping a copy.
 `weewx-extension` and `weewx-extension-ver` still install a single extension.
+
+### Upload tokens
+
+`CODECOV_TOKEN`, `CODACY_API_TOKEN`, and `SONAR_TOKEN` are optional. A provider whose `*-upload`
+input is on but whose token is empty gets a warning annotation and its upload is skipped, so a
+repository that only uses one provider does not have to hold secrets for the others.
 
 ### Shared config files
 
@@ -67,6 +73,16 @@ each `run:` block to shellcheck. The script and the actionlint release it pins c
 the same ref as the config files, so a local run and CI agree. The check runs on the latest matrix cell
 only, and is skipped when the ref has no `tools/actionlint.sh`. Locally, `verify.sh` runs the same
 script.
+
+## Bringing a repository up to date
+
+1. Workflows: copy the files from `workflows-template`, set `module-name` and the test flags, or run
+   `refs.sh` to move the existing refs to the current major version.
+2. Shared configs: `configs.sh` copies `.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`,
+   `.codacy.yaml`, and `requirements.txt` from `development-tools/config`.
+3. Local environment: copy `.devenv-template` to `.devenv` and set `WEEWX_MODULE_NAME`.
+4. `verify.sh` runs the same checks as CI: the environment, pylint and flake8, actionlint, the
+   workflow refs, the config copies, and the tests.
 
 ## Reusable workflows to manage repositories
 

@@ -103,7 +103,7 @@ on:
       latest-weewx-version:
         required: false
         type: string
-        default: '5.5.0'
+        default: '5.5.2'
       oldest-weewx-version:
         required: false
         type: string
@@ -113,12 +113,13 @@ on:
         type: string
         default: ''
     secrets:
+      # Optional: a provider that is not configured simply skips its upload.
       CODECOV_TOKEN:
-        required: true
+        required: false
       CODACY_API_TOKEN:
-        required: true
+        required: false
       SONAR_TOKEN:
-        required: true
+        required: false
 
 jobs:
     run:
