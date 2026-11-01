@@ -22,7 +22,7 @@ verify.sh
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
 | `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `configs.sh`, `mqttcommon.sh`, and `alltests.sh`, reporting every step. | - |
-| `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | - |
+| `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | Lint the workflows |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `mqttcommon.sh` | Copies `mqttcommon` and its tests from the `mqttcommon` repository; `--check` reports drift. | Check the common module |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |

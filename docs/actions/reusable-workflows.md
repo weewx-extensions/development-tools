@@ -60,6 +60,14 @@ workflow compares `bin/user/mqttcommon.py` and `bin/user/tests/unit/test_mqttcom
 does not vendor the module, or the ref is not available, the check is skipped. Locally, the same
 comparison is `mqttcommon.sh --check`.
 
+### Workflow lint
+
+The workflow files are linted with [actionlint](https://github.com/rhysd/actionlint), which also hands
+each `run:` block to shellcheck. The script and the actionlint release it pins come from `config-ref`,
+the same ref as the config files, so a local run and CI agree. The check runs on the latest matrix cell
+only, and is skipped when the ref has no `tools/actionlint.sh`. Locally, `verify.sh` runs the same
+script.
+
 ## Reusable workflows to manage repositories
 
 ### stale

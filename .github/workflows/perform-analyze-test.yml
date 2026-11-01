@@ -114,11 +114,12 @@ on:
         required: false
         type: string
         default: 'v6'
+        description: 'The development-tools ref the shared config files and tools are read from.'
       common-ref:
         required: false
         type: string
         default: 'v1'
-        description: 'The development-tools ref the shared config files are read from.'
+        description: 'The development-tools ref the shared mqttcommon module and its tests are read from.'
     secrets:
       CODECOV_TOKEN:
         required: true
@@ -230,6 +231,42 @@ jobs:
           fi
         done
         exit "${status}"
+
+    - name: Lint the workflows
+      if: ${{inputs.os-version == inputs.latest-os-version &&
+            inputs.python-version == inputs.latest-python-version &&
+            inputs.weewx-version == inputs.latest-weewx-version}}
+      shell: bash
+      run: |
+        if [ ! -d .github/workflows ]; then
+          echo "No .github/workflows here, skipping the workflow lint."
+          exit 0
+        fi
+
+        # The tool, and the actionlint release it pins, come from the same ref
+        # as the config files, so a local run and CI agree.
+        BASE="https://raw.githubusercontent.com/weewx-extensions/development-tools/${{inputs.config-ref}}/tools"
+        TEMP_DIR="${RUNNER_TEMP:-/tmp}/shared-tools"
+        mkdir -p "${TEMP_DIR}"
+        if ! curl -fsSL "${BASE}/actionlint.sh" -o "${TEMP_DIR}/actionlint.sh"; then
+          echo "${BASE}/actionlint.sh is not available, skipping the workflow lint."
+          exit 0
+        fi
+        chmod +x "${TEMP_DIR}/actionlint.sh"
+
+        # actionlint hands each run: block to shellcheck. The runner image has
+        # it; install it only where it is missing, and carry on without it.
+        if ! command -v shellcheck >/dev/null 2>&1; then
+          if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update >/dev/null 2>&1 || true
+            sudo apt-get install -y shellcheck >/dev/null 2>&1 || true
+          fi
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            echo "::warning::shellcheck is not installed, the run: blocks are not checked."
+          fi
+        fi
+
+        "${TEMP_DIR}/actionlint.sh" -verbose
 
     - name: Set up Python ${{ inputs.python-version }}
       uses: actions/setup-python@v6
