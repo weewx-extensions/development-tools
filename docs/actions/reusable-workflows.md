@@ -24,6 +24,27 @@ By default it runs code coverage and uploads it to Codacy; Coveralls, Codecov, a
 A 'wrapper' for the perform-analyze-test workflow that runs the steps against a matrix of OS and Python versions with the 'latest' WeeWX version.
 It will run code coverage and invoke the analysis 'providers' when the matrix invocation is with the 'latest' OS and Python versions.
 
+### Which wrapper runs, and when the providers run
+
+`analyze-test` passes its `latest-*` values through as the actual versions, so that single invocation
+always is the latest combination. `perform-analyze-test` runs the shared checks, coverage, and the
+provider uploads only when the versions equal the `latest-*` ones, which is why the two wrappers
+default them differently:
+
+| input | analyze-test | analyze-test-matrix |
+| --- | --- | --- |
+| `codacy-upload` | true | true |
+| `coveralls-upload` | false | true |
+| `codecov-upload` | false | true |
+| `sonar-scan` | false | true |
+
+The matrix can turn them on because the equality gating reduces them to one upload: that job carries a
+`*` in its name and the other cells only install and test. The single cell wrapper can not, because
+every invocation is that one upload, so the providers would run on every push to every branch.
+
+A caller overrides any of them in its own `with:` block, for example `sonar-scan: false` for a
+repository without a Sonar project.
+
 ### Required WeeWX extensions
 
 `weewx-extensions` lists the extensions the module needs, one per line, as `<url> [version]`.

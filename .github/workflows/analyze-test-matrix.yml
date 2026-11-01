@@ -64,6 +64,8 @@ on:
         required: false
         type: boolean
         default: true
+      # On: perform-analyze-test only uploads from the cell whose versions
+      # match the latest-*, so a matrix run uploads once.
       coveralls-upload:
         required: false
         type: boolean

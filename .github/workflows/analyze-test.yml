@@ -64,6 +64,8 @@ on:
         required: false
         type: boolean
         default: true
+      # Off: this wrapper is a single invocation of the latest versions, so
+      # perform-analyze-test would upload on every push to every branch.
       coveralls-upload:
         required: false
         type: boolean
