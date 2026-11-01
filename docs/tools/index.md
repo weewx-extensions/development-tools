@@ -21,7 +21,8 @@ verify.sh
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `configs.sh --check`, `mqttcommon.sh --check`, and `alltests.sh`, reporting every step's result. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `configs.sh`, `mqttcommon.sh`, and `alltests.sh`, reporting every step. | - |
+| `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | - |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `mqttcommon.sh` | Copies `mqttcommon` and its tests from the `mqttcommon` repository; `--check` reports drift. | Check the common module |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
@@ -35,6 +36,11 @@ verify.sh
 | `cov-func.sh` | The same for the function tests. | - |
 | `watch*.sh` | Re-runs a suite when its tests or module change, using `inotifywait`. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
+
+`actionlint.sh` treats `tools/actionlint` as a cache, not a vendored file: it is in `.gitignore`,
+the cached binary is used only when it matches the pinned release, an actionlint on `PATH` stands in
+when nothing is cached, and otherwise the release is downloaded. Offline, the step reports and
+passes rather than blocking `verify.sh`.
 
 ## Settings
 

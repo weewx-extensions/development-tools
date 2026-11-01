@@ -1,3 +1,4 @@
 *.pyc
 act-artifacts/
 .coverage
+tools/actionlint
