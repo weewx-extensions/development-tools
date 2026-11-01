@@ -21,8 +21,9 @@ verify.sh
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `configs.sh --check`, and `alltests.sh`, reporting every step's result. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `configs.sh --check`, `mqttcommon.sh --check`, and `alltests.sh`, reporting every step's result. | - |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
+| `mqttcommon.sh` | Copies `mqttcommon` and its tests from the `mqttcommon` repository; `--check` reports drift. | Check the common module |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
@@ -82,6 +83,23 @@ The tests are linted as well, with `.pylintrc-tests`, which turns off the conven
 legitimately break (docstrings, naming, mocks, complexity). `.codacy.yaml` keeps Codacy from
 re-linting the tests with its own defaults. `lint.sh` covers
 `bin/user/tests` by default; set `WEEWX_TEST_LINT_PATHS=''` to skip it.
+
+## Shared common module
+
+`mqttcommon.py` — the paho MQTT code shared by the `weewx-mqtt` extensions — has its own
+repository, [weewx-mqtt/mqttcommon](https://github.com/weewx-mqtt/mqttcommon). The extensions still
+ship a copy (their `install.py` lists it), so the file stays in each repository; the copy is pulled
+from the source of truth rather than edited:
+
+```bash
+mqttcommon.sh           # copy the module and its tests in
+mqttcommon.sh --check   # report the ones that differ
+```
+
+`mqttcommon.sh` resolves the source as a sibling checkout (`../mqttcommon`); set `MQTTCOMMON_SRC` to
+point elsewhere, for example to test an uncommitted change against a consumer. `verify.sh` runs the
+check, and the analyze-test workflow compares the copies with `common-ref` (default `v1`). The
+check is skipped in repositories that do not vendor the module.
 
 ## Outputs
 

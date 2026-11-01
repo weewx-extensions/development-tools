@@ -51,6 +51,15 @@ is skipped.
 The tests are linted too, using `.pylintrc-tests`, when the repository has a `bin/user/tests`
 directory.
 
+### Shared common module
+
+`mqttcommon.py` is copied in from
+[weewx-mqtt/mqttcommon](https://github.com/weewx-mqtt/mqttcommon) rather than edited here. The
+workflow compares `bin/user/mqttcommon.py` and `bin/user/tests/unit/test_mqttcommon.py` with
+`common-ref` (default `v1`), so a stale or hand-edited copy fails the build. If the repository
+does not vendor the module, or the ref is not available, the check is skipped. Locally, the same
+comparison is `mqttcommon.sh --check`.
+
 ## Reusable workflows to manage repositories
 
 ### stale

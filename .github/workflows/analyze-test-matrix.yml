@@ -84,6 +84,10 @@ on:
         required: false
         type: string
         default: 'v6'
+      common-ref:
+        required: false
+        type: string
+        default: 'v1'
         description: 'The development-tools ref the shared config files are read from.'
       # These are not expected to be passed in
       # They are here so that I can define the values once
@@ -169,6 +173,7 @@ jobs:
       codacy-upload: ${{inputs.codacy-upload}}
       sonar-scan: ${{inputs.sonar-scan}}
       config-ref: ${{inputs.config-ref}}
+      common-ref: ${{inputs.common-ref}}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
