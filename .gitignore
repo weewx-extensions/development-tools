@@ -2,3 +2,4 @@
 act-artifacts/
 .coverage
 tools/actionlint
+results/
