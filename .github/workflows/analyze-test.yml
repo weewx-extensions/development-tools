@@ -103,7 +103,7 @@ on:
       latest-python-version:
         required: false
         type: string
-        default: '3.13'
+        default: '3.14'
       latest-weewx-version:
         required: false
         type: string
