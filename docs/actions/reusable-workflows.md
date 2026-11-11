@@ -125,4 +125,7 @@ If there is no activity against the stale issue, it will be closed.
 
 ### versioning
 
-Create and keep up to date tags for `@latest` and for `@Vx`, where x is the major version number of `x.y.x`.
+Create and keep up to date tags for `@latest`, `@Vx`, and `@Vx.y`, where x is the major version
+number and y is the minor version number of `x.y.z`. The workflow moves `@Vx.y` only when the
+release is the newest patch in that minor line, `@Vx` only when it is the newest release in that
+major, and `@latest` only when it is the newest release overall. Prereleases are ignored.

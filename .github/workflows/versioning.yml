@@ -5,8 +5,81 @@ on:
 
 jobs:
   version:
+    if: github.event_name == 'release' && github.event.release.prerelease == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: Actions-R-Us/actions-tagger@v2
+      - name: Find the newest release tags
+        id: newest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "${TAG}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              echo "::error::${TAG} is not a final semantic version."
+              exit 1
+          fi
+          major=${BASH_REMATCH[1]}
+          minor=${BASH_REMATCH[1]}.${BASH_REMATCH[2]}
+
+          refs=$(gh api --paginate \
+              "repos/${GITHUB_REPOSITORY}/git/matching-refs/tags/v" \
+              --jq '.[].ref')
+          tags=$(printf '%s\n' "${refs}" \
+              | sed 's|^refs/tags/||' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)
+
+          # Include the tag being released in case the API has not caught up.
+          tags=$(printf '%s\n%s\n' "${tags}" "${TAG}" | sort -u)
+
+          newest=$(printf '%s\n' "${tags}" | sort -V | tail -1)
+          newest_major=$(printf '%s\n' "${tags}" | grep -E "^v${major}\\." | sort -V | tail -1)
+          newest_minor=$(printf '%s\n' "${tags}" | grep -E "^v${minor}\\." | sort -V | tail -1)
+
+          if [ "${TAG}" == "${newest}" ]; then
+              is_latest=true
+          else
+              is_latest=false
+          fi
+          if [ "${TAG}" == "${newest_major}" ]; then
+              is_major_latest=true
+          else
+              is_major_latest=false
+          fi
+          if [ "${TAG}" == "${newest_minor}" ]; then
+              is_minor_latest=true
+          else
+              is_minor_latest=false
+          fi
+
+          {
+              echo "is_latest=${is_latest}"
+              echo "is_major_latest=${is_major_latest}"
+              echo "is_minor_latest=${is_minor_latest}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Update the minor tag
+        if: steps.newest.outputs.is_minor_latest == 'true'
+        uses: cssnr/update-version-tags-action@v2
         with:
-          publish_latest_tag: true
+          major: false
+          minor: true
+
+      - name: Update the major tag
+        if: steps.newest.outputs.is_major_latest == 'true'
+        uses: cssnr/update-version-tags-action@v2
+        with:
+          major: true
+          minor: false
+
+      - name: Update the latest tag
+        if: steps.newest.outputs.is_latest == 'true'
+        uses: cssnr/update-version-tags-action@v2
+        with:
+          major: false
+          minor: false
+          tags: latest

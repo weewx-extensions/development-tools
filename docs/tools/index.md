@@ -24,6 +24,7 @@ verify.sh
 | `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`. | - |
 | `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | Lint the workflows |
 | `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
+| `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
@@ -114,6 +115,21 @@ input) and looks for sibling checkouts under `WEEWX_COMMON_SRC` (default `..`); 
 elsewhere, for example to test an uncommitted change against a consumer. Each repository lists its
 files in its own `common-files.txt`. `verify.sh` runs the check, and the analyze-test workflow
 compares the copies at the declared ref; a repository that declares nothing is skipped.
+
+## Floating version tags
+
+The versioning workflow keeps `vX`, `vX.Y`, and `latest` in step with each release. To backfill a
+repository or repair drift, create the tags from the releases already in the checkout:
+
+```bash
+git fetch --tags
+tagversions.sh --check   # report missing or stale tags
+tagversions.sh --push    # write the tags locally and force-update origin
+```
+
+Only final `vX.Y.Z` releases are considered; prereleases are ignored. `--no-latest` leaves `latest`
+alone. The script is only needed for the initial backfill or to repair drift; the workflow maintains
+the tags after each release.
 
 ## Outputs
 
