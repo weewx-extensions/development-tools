@@ -9,7 +9,7 @@
 #
 set -uo pipefail
 
-. "$(dirname "$(readlink -f "$0")")/common.sh"
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
 # The versions CI pins, read from this repository's workflow.
 workflow=$(ls .github/workflows/*analyze-test*.yml 2>/dev/null | head -1)
@@ -92,10 +92,11 @@ for path in "${python_paths[@]}"; do
 done
 
 if [[ " ${WEEWX_TEST_SUITES} " == *' integ '* ]]; then
-    if (exec 3<>/dev/tcp/127.0.0.1/1883) 2>/dev/null; then
-        ok "mosquitto on 127.0.0.1:1883"
+    # The suites start their own broker, so the binary is what has to be there.
+    if command -v mosquitto >/dev/null 2>&1; then
+        ok "mosquitto $(command -v mosquitto)"
     else
-        fail "mosquitto on 127.0.0.1:1883 (the integration tests need a broker)"
+        fail "mosquitto (on macOS it is in /opt/homebrew/sbin, which Homebrew keeps off PATH)"
     fi
 fi
 

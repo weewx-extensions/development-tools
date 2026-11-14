@@ -9,7 +9,7 @@
 #
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "$0")")/common.sh"
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
 mkdir -p "${WEEWX_RESULTS_DIR}"
 

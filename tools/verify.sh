@@ -9,7 +9,7 @@
 #
 set -uo pipefail
 
-TOOLS_DIR="$(dirname "$(readlink -f "$0")")"
+TOOLS_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 
 status=0
 failed=''

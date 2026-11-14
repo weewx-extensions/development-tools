@@ -12,7 +12,7 @@
 #
 set -euo pipefail
 
-TOOLS_DIR="$(dirname "$(readlink -f "$0")")"
+TOOLS_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 ACTIONLINT="${TOOLS_DIR}/actionlint"
 
 # Pinned so the local check matches CI. Override to try another release.

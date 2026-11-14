@@ -9,7 +9,7 @@
 #
 set -euo pipefail
 
-CONFIG_DIR="$(dirname "$(readlink -f "$0")")/../config"
+CONFIG_DIR="$(cd "$(dirname "$0")/../config" && pwd -P)"
 CONFIGS='.pylintrc .pylintrc-tests .flake8 .coveragerc .codacy.yaml requirements.txt'
 
 check=0

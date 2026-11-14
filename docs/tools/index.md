@@ -17,6 +17,24 @@ verify.sh
 
 `.devenv` puts `$WEEWX_TOOL_PATH` on `PATH`, so the scripts can be run by name.
 
+## Platforms
+
+The scripts run on Linux, which is what CI uses, and on macOS. They are written for bash 3.2, the
+`/bin/bash` macOS ships, and for the utilities both systems provide, so `verify.sh` needs neither
+Homebrew's bash nor coreutils.
+
+The mosquitto broker is the one macOS difference: Homebrew installs it into `/opt/homebrew/sbin`,
+which it keeps off `PATH`, and the integration tests skip themselves without the binary. Add it:
+
+```bash
+export PATH="/opt/homebrew/sbin:$PATH"
+```
+
+`checkenv.sh` reports that binary as missing, so a skipped suite does not pass unnoticed.
+
+`watch*.sh` re-run a suite with `inotifywait` and are Linux only. `tagversions.sh` needs bash 4
+and GNU `sort`, so run it from Linux or with Homebrew's bash and coreutils.
+
 ## Scripts
 
 | Script | Does | Corresponding CI step |

@@ -8,7 +8,7 @@
 #
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "$0")")/common.sh"
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
 coverage run --branch -m pytest bin/user/tests/func
 

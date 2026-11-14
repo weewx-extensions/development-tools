@@ -6,6 +6,6 @@
 #
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "$0")")/common.sh"
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
 run_tests e2e

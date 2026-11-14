@@ -8,12 +8,12 @@
 #
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "$0")")/common.sh"
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
 # The suite list is intentionally unquoted, it holds several names.
 # shellcheck disable=SC2086
 for suite in ${WEEWX_TEST_SUITES}; do
-    echo "**** Running ${suite^^} Tests ****"
+    echo "**** Running $(printf '%s' "${suite}" | tr '[:lower:]' '[:upper:]') Tests ****"
     if [ "${suite}" == "integ" ]; then
         run_tests "${suite}" --import-mode=append
     else

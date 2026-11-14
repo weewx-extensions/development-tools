@@ -6,7 +6,7 @@
 #
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "$0")")/common.sh"
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
 # The integration suite's utils module collides with other test directories,
 # so CI imports the modules by their path.
