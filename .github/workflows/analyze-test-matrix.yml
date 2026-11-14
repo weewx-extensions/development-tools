@@ -136,7 +136,7 @@ jobs:
         os-version: ["ubuntu-24.04", "ubuntu-22.04"]
         # Specify the exact minimum supported Python version, ie 3.9.13 and not 3.9
         # Note, 3.9.13 is the oldest version that runs via github actions
-        python-version: ["3.9.13", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.9.13", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
         weewx-version: ["${{inputs.latest-weewx-version}}"]
         include:
           - weewx-version: ${{inputs.oldest-weewx-version}}
