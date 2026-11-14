@@ -4,10 +4,15 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
+#    Run the function tests, and again whenever this script, functests.sh, the
+#    module, or the tests change.
+#
+set -euo pipefail
 
-$WEEWX_TOOL_PATH/functests.sh
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
 
-while inotifywait -e modify $WEEWX_TOOL_PATH/watchfunctests.sh $WEEWX_TOOL_PATH/functests.sh bin/user/$WEEWX_MODULE_NAME.py bin/user/tests/func
-do
-    $WEEWX_TOOL_PATH/functests.sh
-done
+watch_and_run "${WEEWX_TOOL_PATH}/functests.sh" \
+    "${WEEWX_TOOL_PATH}/watchfunctests.sh" \
+    "${WEEWX_TOOL_PATH}/functests.sh" \
+    "bin/user/${WEEWX_MODULE_NAME}.py" \
+    bin/user/tests/func

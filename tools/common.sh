@@ -54,3 +54,27 @@ run_tests() {
 
     pytest "${pytest_args[@]}"
 }
+
+# Run a command, then again whenever one of the watched paths changes.
+# A suite writes into the tree it reads (__pycache__, reports), so the
+# timestamp is taken after each run rather than before it.
+watch_and_run() {
+    local command=$1
+    shift
+
+    local stamp
+    stamp="$(mktemp "${TMPDIR:-/tmp}/weewx-watch.XXXXXX")"
+    trap 'rm -f "${stamp}"' EXIT
+
+    "${command}"
+    touch "${stamp}"
+    echo "Watching $* for changes. Ctrl-C to stop."
+
+    while :; do
+        if find "$@" -newer "${stamp}" -print 2>/dev/null | grep -q .; then
+            "${command}"
+            touch "${stamp}"
+        fi
+        sleep 1
+    done
+}

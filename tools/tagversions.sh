@@ -53,22 +53,29 @@ if ! git rev-parse --git-dir >/dev/null 2>&1; then
     exit 1
 fi
 
-declare -A major_tags=()
-declare -A minor_tags=()
-newest=''
+# What to apply, '<name> <tag>' per line: the minor keys, then the major keys,
+# then latest. git orders the releases by version, so the last tag seen for a
+# key is the newest and the keys come out in ascending order. The mapping is
+# built with awk because the bash 3.2 macOS ships has no associative arrays and
+# its sort has no version ordering.
+plan=$(git tag --list 'v*' --sort=v:refname | awk -F. '
+    $0 !~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ { next }
+    {
+        major = $1
+        minor = $1 "." $2
+        if (!(minor in minor_tag)) { minor_order[++minors] = minor }
+        if (!(major in major_tag)) { major_order[++majors] = major }
+        minor_tag[minor] = $0
+        major_tag[major] = $0
+        newest = $0
+    }
+    END {
+        for (i = 1; i <= minors; i++) { print minor_order[i], minor_tag[minor_order[i]] }
+        for (i = 1; i <= majors; i++) { print major_order[i], major_tag[major_order[i]] }
+        if (newest != "") { print "latest", newest }
+    }')
 
-# Ascending order leaves the newest release in each key.
-while read -r tag; do
-    if [[ ! "${tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-        continue
-    fi
-
-    major_tags["v${BASH_REMATCH[1]}"]=${tag}
-    minor_tags["v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"]=${tag}
-    newest=${tag}
-done < <(git tag --list 'v*' --sort=v:refname)
-
-if [ -z "${newest}" ]; then
+if [ -z "${plan}" ]; then
     echo "No final release tags (vX.Y.Z) found." >&2
     exit 1
 fi
@@ -111,17 +118,12 @@ apply() {
     updated=$((updated + 1))
 }
 
-while read -r name; do
-    apply "${name}" "${minor_tags[${name}]}"
-done < <(printf '%s\n' "${!minor_tags[@]}" | sort -V)
-
-while read -r name; do
-    apply "${name}" "${major_tags[${name}]}"
-done < <(printf '%s\n' "${!major_tags[@]}" | sort -V)
-
-if [ "${latest}" == "1" ]; then
-    apply latest "${newest}"
-fi
+while read -r name tag; do
+    if [ "${name}" == "latest" ] && [ "${latest}" != "1" ]; then
+        continue
+    fi
+    apply "${name}" "${tag}"
+done <<< "${plan}"
 
 if [ "${status}" == "0" ] && [ "${updated}" == "0" ]; then
     echo "All floating tags are up to date."

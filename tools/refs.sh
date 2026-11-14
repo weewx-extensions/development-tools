@@ -85,7 +85,9 @@ for workflow in .github/workflows/*.yml; do
             echo "${workflow}:${lineno}: ${name}.yml@${ref} should be @${expected}"
             status=1
         else
-            sed -i "${lineno}s|${name}\.yml@${ref}|${name}.yml@${expected}|" "${workflow}"
+            # BSD sed wants a backup suffix with -i, GNU sed accepts one.
+            sed -i.bak "${lineno}s|${name}\.yml@${ref}|${name}.yml@${expected}|" "${workflow}"
+            rm -f "${workflow}.bak"
             echo "${workflow}:${lineno}: ${name}.yml@${ref} -> @${expected}"
         fi
     done < <(grep -nE "${USES_RE}" "${workflow}")

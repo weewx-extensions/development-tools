@@ -4,9 +4,15 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-$WEEWX_TOOL_PATH/coverage.sh
+#    Report coverage, and again whenever this script, coverage.sh, the module,
+#    or the unit tests change.
+#
+set -euo pipefail
 
-while inotifywait -e modify $WEEWX_TOOL_PATH/watchcoverage.sh $WEEWX_TOOL_PATH/coverage.sh bin/user/$WEEWX_MODULE_NAME.py bin/user/tests/unit
-do
-    $WEEWX_TOOL_PATH/coverage.sh
-done
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
+
+watch_and_run "${WEEWX_TOOL_PATH}/coverage.sh" \
+    "${WEEWX_TOOL_PATH}/watchcoverage.sh" \
+    "${WEEWX_TOOL_PATH}/coverage.sh" \
+    "bin/user/${WEEWX_MODULE_NAME}.py" \
+    bin/user/tests/unit

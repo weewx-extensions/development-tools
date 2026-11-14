@@ -20,8 +20,8 @@ verify.sh
 ## Platforms
 
 The scripts run on Linux, which is what CI uses, and on macOS. They are written for bash 3.2, the
-`/bin/bash` macOS ships, and for the utilities both systems provide, so `verify.sh` needs neither
-Homebrew's bash nor coreutils.
+`/bin/bash` macOS ships, and for the utilities both systems provide, so they need neither Homebrew's
+bash nor coreutils.
 
 The mosquitto broker is the one macOS difference: Homebrew installs it into `/opt/homebrew/sbin`,
 which it keeps off `PATH`, and the integration tests skip themselves without the binary. Add it:
@@ -32,8 +32,8 @@ export PATH="/opt/homebrew/sbin:$PATH"
 
 `checkenv.sh` reports that binary as missing, so a skipped suite does not pass unnoticed.
 
-`watch*.sh` re-run a suite with `inotifywait` and are Linux only. `tagversions.sh` needs bash 4
-and GNU `sort`, so run it from Linux or with Homebrew's bash and coreutils.
+`tagversions.sh` takes its version order from `git` and maps the releases with `awk`, and
+`watch*.sh` poll with `find`, so neither needs GNU `sort` or `inotifywait`.
 
 ## Scripts
 
@@ -54,7 +54,7 @@ and GNU `sort`, so run it from Linux or with Homebrew's bash and coreutils.
 | `alltests.sh` | Runs the suites in `WEEWX_TEST_SUITES`, skipping suites with no directory, and stops at the first failure. | All of the test steps |
 | `coverage.sh` | Measures unit test coverage, writes the HTML and XML reports. | Code Coverage |
 | `cov-func.sh` | The same for the function tests. | - |
-| `watch*.sh` | Re-runs a suite when its tests or module change, using `inotifywait`. | - |
+| `watch*.sh` | Re-runs a suite, and the coverage report, when its script, the module, or the tests change. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
 
 `configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so

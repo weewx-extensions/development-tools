@@ -4,9 +4,15 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-$WEEWX_TOOL_PATH/unittests.sh
+#    Run the unit tests, and again whenever this script, unittests.sh, the
+#    module, or the tests change.
+#
+set -euo pipefail
 
-while inotifywait -e modify $WEEWX_TOOL_PATH/watchunittests.sh $WEEWX_TOOL_PATH/unittests.sh bin/user/$WEEWX_MODULE_NAME.py bin/user/tests/unit
-do
-    $WEEWX_TOOL_PATH/unittests.sh
-done
+. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
+
+watch_and_run "${WEEWX_TOOL_PATH}/unittests.sh" \
+    "${WEEWX_TOOL_PATH}/watchunittests.sh" \
+    "${WEEWX_TOOL_PATH}/unittests.sh" \
+    "bin/user/${WEEWX_MODULE_NAME}.py" \
+    bin/user/tests/unit
