@@ -32,6 +32,15 @@ note() {
     echo "  note    $*"
 }
 
+# The e2e suite connects to the default MQTT port, so a broker has to be there.
+broker_listening() {
+    python3 - <<'PY' >/dev/null 2>&1
+import socket
+
+socket.create_connection(('localhost', 1883), timeout=1).close()
+PY
+}
+
 echo "Checking ${WEEWX_MODULE_NAME:-the extension}"
 
 python_version=$(python3 -c 'import platform; print(platform.python_version())' 2>/dev/null)
@@ -97,6 +106,16 @@ if [[ " ${WEEWX_TEST_SUITES} " == *' integ '* ]]; then
         ok "mosquitto $(command -v mosquitto)"
     else
         fail "mosquitto (on macOS it is in /opt/homebrew/sbin, which Homebrew keeps off PATH)"
+    fi
+fi
+
+if [[ " ${WEEWX_TEST_SUITES} " == *' e2e '* ]] && [ -d bin/user/tests/e2e ]; then
+    # e2e is the one suite that uses the default port; CI's runner has a broker
+    # there because installing the mosquitto package starts it.
+    if broker_listening; then
+        ok "broker localhost:1883"
+    else
+        fail "broker on localhost:1883 (the e2e suite needs one, start mosquitto)"
     fi
 fi
 

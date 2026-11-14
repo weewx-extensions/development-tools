@@ -43,6 +43,10 @@ export PATH="/opt/homebrew/sbin:$PATH"
 
 `checkenv.sh` reports that binary as missing, so a skipped suite does not pass unnoticed.
 
+The e2e suite uses the default port, so it needs a broker at `localhost:1883`;
+`brew services start mosquitto` on macOS. `checkenv.sh` reports that one too, when the e2e suite is
+configured.
+
 `tagversions.sh` takes its version order from `git` and maps the releases with `awk`, and
 `watch*.sh` poll with `find`, so neither needs GNU `sort` or `inotifywait`.
 
@@ -56,7 +60,7 @@ export PATH="/opt/homebrew/sbin:$PATH"
 | `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
-| `checkenv.sh` | Verifies weewx, paho, the tools, and the integration broker. Reports every miss at once. | Install dependencies |
+| `checkenv.sh` | Verifies weewx, paho, the tools, and the brokers the integration and e2e suites need. Reports every miss at once. | Install dependencies |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
 | `functests.sh` | Runs `bin/user/tests/func`. | Function tests |
