@@ -17,6 +17,17 @@ verify.sh
 
 `.devenv` puts `$WEEWX_TOOL_PATH` on `PATH`, so the scripts can be run by name.
 
+The environment check and the test suites can be run on more than one interpreter, one `--python`
+per pyenv version, so the oldest and the newest the project supports are covered in a single pass:
+
+```bash
+verify.sh --python 3.9.13 --python 3.15.2
+```
+
+Only the steps whose result depends on the interpreter are repeated. `lint.sh` and the other
+static checks run once, as the workflow lints a single matrix cell. The versions must already be
+installed in pyenv; a prefix such as `3.9` resolves to the installed version.
+
 ## Platforms
 
 The scripts run on Linux, which is what CI uses, and on macOS. They are written for bash 3.2, the
@@ -39,7 +50,7 @@ export PATH="/opt/homebrew/sbin:$PATH"
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`; with `--python`, repeats the environment check and the tests on each version. | - |
 | `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | Lint the workflows |
 | `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
 | `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
