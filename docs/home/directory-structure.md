@@ -6,7 +6,7 @@ nav_order: 1
 
 The tools providedk by this repository expect a directory that is like the following.
 All of the GitHub organizations, and therefore repositories, are under a single directory.
-In this case the directory is named, `weewx_dev`.
+In this case the directory is named, `weewx_code`.
 But the name could be anything.
 
 Directly under this directory are any GitHub organizations using tooling provided by this repository.
@@ -15,7 +15,7 @@ Also directly under is a directory of WeeWX releases.
 These releases are used to test the extensions with different versions of WeeWX.
 
 ``` text
-~/weewx_dev
+~/weewx_code
 ├── weewx-extensions
 │   ├── aqi-xtype
 │   ├── development-tools
