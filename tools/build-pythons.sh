@@ -42,6 +42,15 @@
 # but asserts nothing; to pin and check one, add it to openssl_formula() (which Homebrew formula
 # to build against) and expected_openssl() (what to assert). That pair is the per-version work.
 #
+# Every entry in both is openssl@3, which is also python-build's own first choice for each of
+# them (its per-version definitions call prefer_openssl3 or prefer_openssl3_to_4). The pin is
+# therefore a record of the intended state rather than a correction, and it earns its keep by
+# making verify() assert: a bare `pyenv install -f` asks python-build again, and if openssl@3 is
+# ever missing, its preference list slides to bare `openssl` (the linked openssl@4 keg) instead
+# of failing. The pinned build then fails the assertion rather than changing the TLS library
+# quietly. 3.15.2 sat on 4.1.0 for exactly that reason - openssl@3 was not installed when it was
+# originally built - so it, too, is pinned to 3 here.
+#
 # This one is macOS-only: it needs the Homebrew sqlite keg and `otool`. The rest of the tools
 # run on Linux as well.
 #
@@ -82,8 +91,7 @@ usage() {
 # Pass nothing to keep pyenv's own preference list (it starts with openssl@3).
 openssl_formula() {
     case "$1" in
-        3.10.22) echo openssl@3 ;;
-        3.15.2) echo openssl@4 ;;
+        3.9.13|3.10.22|3.14.10|3.15.2) echo openssl@3 ;;
         *) : ;;
     esac
 }
@@ -93,8 +101,7 @@ openssl_formula() {
 # verify() cannot judge: it prints the OpenSSL it found and asserts nothing.
 expected_openssl() {
     case "$1" in
-        3.10.22) echo 3 ;;
-        3.15.2) echo 4 ;;
+        3.9.13|3.10.22|3.14.10|3.15.2) echo 3 ;;
         *) : ;;
     esac
 }
