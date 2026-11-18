@@ -71,6 +71,8 @@ configured.
 | `cov-func.sh` | The same for the function tests. | - |
 | `watch*.sh` | Re-runs a suite, and the coverage report, when its script, the module, or the tests change. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
+| `build-pythons.sh` | Rebuilds pyenv interpreters against Homebrew's SQLite (and the OpenSSL each one uses); `--verify-only` checks them. macOS only. | - |
+| `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
 
 `configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so
 `verify.sh` passes in a repository that keeps only some of them. `development-tools` itself is one:
@@ -80,6 +82,36 @@ it keeps `.flake8` at its root and the rest under `config/`.
 the cached binary is used only when it matches the pinned release, an actionlint on `PATH` stands in
 when nothing is cached, and otherwise the release is downloaded. Offline, the step reports and
 passes rather than blocking `verify.sh`.
+
+## Homebrew interpreters
+
+`build-pythons.sh` and `sqlite-fork-repro.py` are the pair for one macOS problem: on
+macOS 27.2.1 (Apple's libsqlite3 3.54.0) opening *any* SQLite database in a forked child died
+with a SIGSEGV inside `libsqlite3.dylib`, taking the forked worker with it. Against Homebrew's
+sqlite 3.54.1 the same fork survives. Every interpreter tested was affected (3.9.13, 3.10.22,
+3.14.10, 3.15.2, and the system 3.9.6) and whether a process crashed at all was decided per
+process, so it presented as an intermittent hang rather than a crash.
+
+```bash
+build-pythons.sh                 # rebuild and verify 3.10.22 and 3.15.2
+build-pythons.sh 3.14.10         # a version it does not know, with pyenv's OpenSSL choice
+build-pythons.sh --verify-only   # report what is installed, change nothing
+```
+
+It rebuilds the interpreter, so the versions, and the OpenSSL each is built against, are listed
+in the script. `build-pythons.sh --verify-only` checks the extension's recorded library, the
+version loaded at runtime, and the OpenSSL, because only the last two prove that the swap took
+effect. A plain `pyenv install -f` undoes the fix: CPython's configure reaches `sqlite3` through
+Homebrew's shim for the macOS SDK, so the script fails in preflight rather than building that.
+
+```bash
+python3 sqlite-fork-repro.py --trials 3                          # in-memory databases
+python3 sqlite-fork-repro.py --database ~/weewx-data/archive.sdb # a real one
+```
+
+It forks children that each open a database, exits `0` when all survived, `1` when any was
+killed, and `2` on a hang, so it can be run in a loop to compare interpreters or to confirm a
+rebuild. Both scripts are macOS only, and they live here so the diagnosis stays with the fix.
 
 ## Settings
 
