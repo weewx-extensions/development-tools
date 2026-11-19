@@ -1,4 +1,43 @@
-#!/bin/bash
+#! /bin/bash
+#
+#    Copyright (c) 2026 Rich Bell <bellrichm@gmail.com>
+#
+#    See the file LICENSE.txt for your full rights.
+#
+#    Provision a development machine with the tree the tools expect: the
+#    extension, fork and WeeWX repositories, the WeeWX releases, and the
+#    weewx-data links that point at them.
+#
+#    Run it from $HOME, which every path in it is relative to. It is a proof of
+#    concept and one-shot: re-running it fails on the first clone that exists.
+#
+set -uo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: setup.sh
+
+Provision the development tree under $HOME: clone the repositories, unpack the
+WeeWX releases, and link the extension modules and skins into weewx-data.
+
+Run it from $HOME.
+EOF
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "setup.sh: unknown argument '$1'." >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
 mkdir -p weewx_code
 
 
