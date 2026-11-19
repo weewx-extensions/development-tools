@@ -8,9 +8,9 @@
 #    extension, fork and WeeWX repositories, the WeeWX releases, and the
 #    weewx-data links that point at them.
 #
-#    Run it from $HOME, which every path in it is relative to. It is a proof of
-#    concept and not yet re-runnable: the two commands after the links still run
-#    unconditionally.
+#    Run it from $HOME, which every path in it is relative to. A second run
+#    leaves the tree as it is; the two steps it does not own are commented out
+#    below.
 #
 set -uo pipefail
 
@@ -154,8 +154,7 @@ Run it from $HOME.
 EOF
 }
 
-# --dry-run covers the mkdirs and clones below for now; the release downloads,
-# links and station setup join it as each is converted to one of these helpers.
+# --dry-run is threaded through the helpers, so no action runs for real.
 dry_run=0
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -174,14 +173,6 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
-
-# The release downloads, the links and the station setup below do not go through
-# the helpers yet, so a dry run would still clone, link and create a station for
-# real. Refuse rather than half-promise; this goes when step 7 converts them.
-if [ "${dry_run}" -eq 1 ]; then
-    echo "setup.sh: --dry-run is not available yet: the release downloads, links and station setup still run for real." >&2
-    exit 2
-fi
 
 # Every action reports one of create, skip or error, so a run says what it did
 # and a re-run after fixing one problem resumes where the broken run stopped.
@@ -355,14 +346,21 @@ link() {
     local dest="${dir}/${name}"
     local current
 
-    if [ ! -e "${target}" ]; then
-        fail "${dest} -> ${target}: target does not exist"
+    # A dry run has only reported the clones and the station, so what they would
+    # have created cannot be inspected.
+    if [ ! -e "${target}" ] || [ ! -d "${dir}" ]; then
+        if [ "${dry_run}" -eq 1 ]; then
+            would "${dest} -> ${target}"
+            return 0
+        fi
+        if [ ! -e "${target}" ]; then
+            fail "${dest} -> ${target}: target does not exist"
+        else
+            fail "${dir} does not exist, cannot link ${name} into it"
+        fi
         return 1
     fi
-    if [ ! -d "${dir}" ]; then
-        fail "${dir} does not exist, cannot link ${name} into it"
-        return 1
-    fi
+
     if [ -L "${dest}" ]; then
         current=$(readlink "${dest}")
         if [ "${current}" = "${target}" ]; then
@@ -429,13 +427,20 @@ else
         station create "${WEEWX_DATA_DIR}" --no-prompt
 fi
 
+# Where the daemon keeps its pid and sockets.
+mkdir_p "${WEEWX_DATA_DIR}/run"
+
 link_all "${WEEWX_DATA_DIR}/bin/user" "${USER_MODULES[@]}"
 link_all "${WEEWX_DATA_DIR}/skins" "${SKINS[@]}"
 
-"${WEEWX_CODE_ROOT}/configs/extensions/development-config.sh"
+# Two steps this script does not own: assembling weewx.conf from the configs
+# repository, and listing the WeeWX versions. Run them by hand until they have a
+# tracked home.
+# "${WEEWX_CODE_ROOT}/configs/extensions/development-config.sh"
+# "${WEEWX_CODE_ROOT}/WeeWX-Extras/utils/listVersions.py"
 
-"${WEEWX_CODE_ROOT}/WeeWX-Extras/utils/listVersions.py"
-
+# The dependencies belong to an interpreter, and each pyenv version has its own,
+# so they are installed by hand rather than from here:
 # pyenv install 3.15
 # pyenv global 3.15
 # pip install configobj
@@ -444,8 +449,6 @@ link_all "${WEEWX_DATA_DIR}/skins" "${SKINS[@]}"
 # pip install paho.mqtt
 # pip install jplephem
 # pip install skyfield
-
-mkdir_p "${WEEWX_DATA_DIR}/run"
 
 echo
 if [ "${dry_run}" -eq 1 ]; then
@@ -460,4 +463,6 @@ if [ "${errors}" -ne 0 ]; then
     exit 1
 fi
 
-${PYTHON} weewx/src/weewxd.py --config "${WEEWX_DATA_DIR}/weewx.conf"
+# The daemon is started by whatever supervises the station on this machine, not
+# by the script that provisions it.
+# ${PYTHON} ${PWD}/weewx/src/weewxd.py --config "${WEEWX_DATA_DIR}/weewx.conf"
