@@ -4,7 +4,11 @@ parent: Overview
 nav_order: 1
 ---
 
-The tools providedk by this repository expect a directory that is like the following.
+The tools provided by this repository expect a directory that is like the following.
+This is an example of the shape, not a fixed list: the repositories and releases the tools
+look for are named by the arrays in `tools/setup.sh` (`ROOT_REPOS`, `FORK_REPOS`,
+`EXTENSION_REPOS`, `MQTT_REPOS` and `WEEWX_VERSIONS`), which are the definitive content.
+
 All of the GitHub organizations, and therefore repositories, are under a single directory.
 In this case the directory is named, `weewx_code`.
 But the name could be anything.
@@ -16,41 +20,30 @@ These releases are used to test the extensions with different versions of WeeWX.
 
 ``` text
 ~/weewx_code
+├── WeeWX-Extras
+├── configs
+├── secrets
+├── forks
 ├── weewx-extensions
-│   ├── aqi-xtype
-│   ├── development-tools
-│   ├── healthchecks
-│   ├── jas
-│   ├── pushover
-│   ├── weewx -> weewx-5.1.0
-│   ├── weewx-5.0.0 -> ../weewx-releases/weewx-5.0.0
-│   ├── weewx-5.0.1 -> ../weewx-releases/weewx-5.0.1
-│   ├── weewx-5.0.2 -> ../weewx-releases/weewx-5.0.2
-│   ├── weewx-5.1.0 -> ../weewx-releases/weewx-5.1.0
-│   └── wikis
+│   ├── aqi-xtype
+│   ├── development-tools
+│   ├── healthchecks
+│   ├── jas
+│   ├── pushover
+│   └── test
 ├── weewx-mqtt
-│   ├── publish
-│   ├── replicate
-│   ├── subscribe
-│   ├── weewx -> weewx-5.1.0
-│   ├── weewx-5.0.0 -> ../weewx-releases/weewx-5.0.0
-│   ├── weewx-5.0.1 -> ../weewx-releases/weewx-5.0.1
-│   ├── weewx-5.0.2 -> ../weewx-releases/weewx-5.0.2
-│   ├── weewx-5.1.0 -> ../weewx-releases/weewx-5.1.0
-│   └── wikis
+│   ├── mqttcommon
+│   ├── plugin-loopdata
+│   ├── publish
+│   ├── replicate
+│   ├── subscribe
+│   ├── weewx-fork -> ../weewx-releases/weewx-fork
+│   └── weewx -> weewx-fork
 └── weewx-releases
+    ├── weewx-clone
     ├── weewx-fork
-    ├── weewx-4.10.0
-    ├── weewx-4.10.1
-    ├── weewx-4.10.2
-    ├── weewx-4.6.1
-    ├── weewx-4.7.0
-    ├── weewx-4.8.0
-    ├── weewx-4.9.0
-    ├── weewx-5.0.0
-    ├── weewx-5.0.1
-    ├── weewx-5.0.2
-    └── weewx-5.1.0
+    ├── weewx-5.5.2
+    └── weewx-5.0.0
 ```
 
 A typical extension directory structure would look like this.
@@ -64,7 +57,7 @@ A typical extension directory structure would look like this.
 │           ├── func
 │           ├── integ
 │           └── unit
-|── changes.txt
+├── changes.txt
 ├── codecov.yml
 ├── .coverage
 ├── .coveragerc
