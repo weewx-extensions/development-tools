@@ -9,7 +9,8 @@
 #    weewx-data links that point at them.
 #
 #    Run it from $HOME, which every path in it is relative to. It is a proof of
-#    concept and one-shot: re-running it fails on the first clone that exists.
+#    concept and not yet re-runnable: the clones and links below still fail on a
+#    second run.
 #
 set -uo pipefail
 
@@ -24,20 +25,28 @@ PYTHON="${PYTHON:-python3}"
 
 usage() {
     cat <<'EOF'
-Usage: setup.sh
+Usage: setup.sh [--dry-run]
 
 Provision the development tree under $HOME: clone the repositories, unpack the
 WeeWX releases, and link the extension modules and skins into weewx-data.
 
 Run it from $HOME.
+
+  --dry-run   Say what would be done and change nothing.
 EOF
 }
 
+# --dry-run covers the mkdirs below for now; the clones, downloads and links
+# join it as each is converted to one of these helpers.
+dry_run=0
 while [ "$#" -gt 0 ]; do
     case "$1" in
         -h|--help)
             usage
             exit 0
+            ;;
+        --dry-run)
+            dry_run=1
             ;;
         *)
             echo "setup.sh: unknown argument '$1'." >&2
@@ -45,9 +54,61 @@ while [ "$#" -gt 0 ]; do
             exit 2
             ;;
     esac
+    shift
 done
 
-mkdir -p "${WEEWX_CODE_ROOT}"
+# Every action reports one of create, skip or error, so a run says what it did
+# and a re-run after fixing one problem resumes where the broken run stopped.
+# The counts are summed at the end, and any error makes the script exit non-zero.
+created=0
+skipped=0
+errors=0
+
+fail() {
+    echo "  error   $*" >&2
+    errors=$((errors + 1))
+}
+
+skip() {
+    echo "  skip    $*"
+    skipped=$((skipped + 1))
+}
+
+# Run a command, or with --dry-run report the command that would have run.
+perform() {
+    local description=$1
+    shift
+
+    if [ "${dry_run}" -eq 1 ]; then
+        echo "  create  ${description}"
+        created=$((created + 1))
+        return 0
+    fi
+    if "$@"; then
+        echo "  create  ${description}"
+        created=$((created + 1))
+    else
+        fail "${description}"
+    fi
+}
+
+# mkdir -p is idempotent on its own; this adds the reporting that everything
+# else has, so a second run does not look like a no-op.
+mkdir_p() {
+    local dir=$1
+
+    if [ -d "${dir}" ]; then
+        skip "${dir}"
+        return 0
+    fi
+    perform "${dir}" mkdir -p "${dir}"
+}
+
+if [ "${dry_run}" -eq 1 ]; then
+    echo "Dry run: nothing will be changed."
+fi
+
+mkdir_p "${WEEWX_CODE_ROOT}"
 
 
 
@@ -55,7 +116,7 @@ git clone git@github.com:bellrichm/WeeWX-Extras "${WEEWX_CODE_ROOT}/WeeWX-Extras
 git clone git@github.com:bellrichm/configs "${WEEWX_CODE_ROOT}/configs"
 git clone git://rmbell.local/secrets "${WEEWX_CODE_ROOT}/secrets"
 
-mkdir "${WEEWX_CODE_ROOT}/forks"
+mkdir_p "${WEEWX_CODE_ROOT}/forks"
 git clone git@github.com:bellrichm/fuzzy-archer "${WEEWX_CODE_ROOT}/forks/fuzzy-archer"
 git clone git@github.com:bellrichm/vds-weewx-v3-mem-extension "${WEEWX_CODE_ROOT}/forks/vds-weewx-v3-mem-extension"
 git clone git@github.com:bellrichm/weewx-belchertown "${WEEWX_CODE_ROOT}/forks/weewx-belchertown"
@@ -70,7 +131,7 @@ git clone git@github.com:bellrichm/weewx-xaggs "${WEEWX_CODE_ROOT}/forks/weewx-x
 git -C "${WEEWX_CODE_ROOT}/forks/weewx-celestial" checkout mqtt
 git -C "${WEEWX_CODE_ROOT}/forks/weewx-skyfield" checkout file_location
 
-mkdir -p "${WEEWX_CODE_ROOT}/weewx-extensions"
+mkdir_p "${WEEWX_CODE_ROOT}/weewx-extensions"
 git clone git@github.com:weewx-extensions/aqi-xtype "${WEEWX_CODE_ROOT}/weewx-extensions/aqi-xtype"
 git clone git@github.com:weewx-extensions/development-tools "${WEEWX_CODE_ROOT}/weewx-extensions/development-tools"
 git clone git@github.com:weewx-extensions/jas "${WEEWX_CODE_ROOT}/weewx-extensions/jas"
@@ -78,14 +139,14 @@ git clone git@github.com:weewx-extensions/healthchecks "${WEEWX_CODE_ROOT}/weewx
 git clone git@github.com:weewx-extensions/pushover "${WEEWX_CODE_ROOT}/weewx-extensions/pushover"
 git clone git@github.com:weewx-extensions/test "${WEEWX_CODE_ROOT}/weewx-extensions/test"
 
-mkdir -p "${WEEWX_CODE_ROOT}/weewx-mqtt"
+mkdir_p "${WEEWX_CODE_ROOT}/weewx-mqtt"
 git clone git@github.com:weewx-mqtt/mqttcommon "${WEEWX_CODE_ROOT}/weewx-mqtt/mqttcommon"
 git clone git@github.com:weewx-mqtt/plugin-loopdata "${WEEWX_CODE_ROOT}/weewx-mqtt/plugin-loopdata"
 git clone git@github.com:weewx-mqtt/publish "${WEEWX_CODE_ROOT}/weewx-mqtt/publish"
 git clone git@github.com:weewx-mqtt/replicate "${WEEWX_CODE_ROOT}/weewx-mqtt/replicate"
 git clone git@github.com:weewx-mqtt/subscribe "${WEEWX_CODE_ROOT}/weewx-mqtt/subscribe"
 
-mkdir "${WEEWX_CODE_ROOT}/weewx-releases"
+mkdir_p "${WEEWX_CODE_ROOT}/weewx-releases"
 wget -P "${WEEWX_CODE_ROOT}/weewx-releases" https://weewx.com/downloads/released_versions/weewx-5.5.2.tgz 
 tar -xzf "${WEEWX_CODE_ROOT}/weewx-releases/weewx-5.5.2.tgz" -C "${WEEWX_CODE_ROOT}/weewx-releases/"
 rm "${WEEWX_CODE_ROOT}/weewx-releases/weewx-5.5.2.tgz"
@@ -180,6 +241,19 @@ ln -s "${WEEWX_CODE_ROOT}/forks/weewx-wdc/skins/weewx-wdc" "${WEEWX_DATA_DIR}/sk
 
 ${PYTHON} weewx/src/weectl.py station create "${WEEWX_DATA_DIR}" --no-prompt
 
-mkdir "${WEEWX_DATA_DIR}/run"
+mkdir_p "${WEEWX_DATA_DIR}/run"
+
+echo
+if [ "${dry_run}" -eq 1 ]; then
+    echo "Dry run: ${created} would be created, ${skipped} skipped, ${errors} errors."
+elif [ "${errors}" -ne 0 ]; then
+    echo "Failed: ${created} created, ${skipped} skipped, ${errors} errors." >&2
+else
+    echo "Done: ${created} created, ${skipped} skipped."
+fi
+
+if [ "${errors}" -ne 0 ]; then
+    exit 1
+fi
 
 ${PYTHON} weewx/src/weewxd.py --config "${WEEWX_DATA_DIR}/weewx.conf"
