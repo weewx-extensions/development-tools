@@ -28,6 +28,34 @@ Only the steps whose result depends on the interpreter are repeated. `lint.sh` a
 static checks run once, as the workflow lints a single matrix cell. The versions must already be
 installed in pyenv; a prefix such as `3.9` resolves to the installed version.
 
+## Provisioning a development machine
+
+`setup.sh` provisions a development machine from the repositories in its `EDIT THESE` block: it
+links the extension modules and the skins into the station, links the release checkouts, and
+reports every action. It is idempotent — a second run reports `0 created, 100 skipped` — and it
+never deletes.
+
+It leaves to the operator the rest of the provisioning:
+
+- Assembling the station's `weewx.conf` from the fragments in the `configs` repository:
+  `configs/extensions/development-config.sh`.
+- Listing the WeeWX versions the tools should be checked against: `WeeWX-Extras/utils/listVersions.py`.
+- Installing the per-interpreter dependencies: `pyenv install`, then per version
+  `pip install configobj`, `pip install ct3`, `pip install Pillow`, `pip install paho.mqtt`,
+  `pip install jplephem`, `pip install skyfield`, and `pip install boto3 six` for the AWS-S3
+  report's upload generator.
+
+```bash
+setup.sh            # run from $HOME; the manual steps above are the rest of the provisioning
+```
+
+A copy of the script can also be fetched straight from the repository with wget instead of
+cloning it:
+
+```bash
+wget -O setup.sh https://raw.githubusercontent.com/weewx-extensions/development-tools/master/tools/setup.sh
+```
+
 ## Platforms
 
 The scripts run on Linux, which is what CI uses, and on macOS. They are written for bash 3.2, the
@@ -73,6 +101,7 @@ configured.
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
 | `build-pythons.sh` | Rebuilds pyenv interpreters against Homebrew's SQLite (and the OpenSSL each one uses); `--verify-only` checks them. macOS only. | - |
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
+| `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
 
 `configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so
 `verify.sh` passes in a repository that keeps only some of them. `development-tools` itself is one:
