@@ -70,8 +70,8 @@ WEEWX_VERSIONS=(5.5.2 5.0.0)
 WEEWX_RELEASES_URL='https://weewx.com/downloads/released_versions'
 
 # The extension modules linked into the station's bin/user, and the skins linked
-# into its skins directory. An entry is a path beneath WEEWX_CODE_ROOT; a second
-# word names the link when it is not the source's basename.
+# into its skins directory. Each entry is a path beneath WEEWX_CODE_ROOT, and the
+# link takes the source's basename.
 USER_MODULES=(
     weewx-extensions/aqi-xtype/bin/user/aqitype.py
     WeeWX-Extras/bin/user/backup.py
@@ -106,6 +106,7 @@ USER_MODULES=(
     WeeWX-Extras/bin/user/replicatedb.py
     weewx-mqtt/replicate/bin/user/run_mqttreplicate.py
     WeeWX-Extras/bin/user/runreports.py
+    WeeWX-Extras/bin/user/s3upload.py
     forks/fuzzy-archer/bin/user/sunevents.py
     forks/weewx-wdc/bin/user/weewx_wdc.py
     forks/weewx-skyfield/bin/user/wxskyfield.py
@@ -119,25 +120,20 @@ SKINS=(
     forks/weewx-belchertown/skins/Belchertown
     forks/fuzzy-archer/skins/Bootstrap
     forks/weewx-celestial/skins/Celestial
-    # Horizon arrived in WeeWX 5.1, and the fork predates it, so take it from
-    # the newest release rather than from the checkout the station runs.
-    "weewx-releases/weewx-${WEEWX_VERSIONS[0]}/src/weewx_data/skins/Horizon Horizon"
     forks/weewx-loopdata/skins/LoopData
     forks/weewx-celestial/skins/MQTTCelestial
     weewx-mqtt/plugin-loopdata/skins/MQTTLoopData
+    WeeWX-Extras/skins/Production
     forks/weewx-loopdata/skins/ScriptData
     forks/weewx-skyfield/skins/Skyfield
     weewx-extensions/aqi-xtype/skins/aqitype
     forks/weewx-cmon/skins/cmon
-    # A directory of skins rather than a skin. Its name is not arbitrary: the
-    # Production report reaches into it as `skin = custom/Production`, and that
-    # line comes from configs/extensions/stdreport/production.conf.
-    "WeeWX-Extras/skins custom"
     WeeWX-Extras/skins/develop
     weewx-extensions/healthchecks/skins/healthchecks
     weewx-extensions/jas/skins/jas
     forks/vds-weewx-v3-mem-extension/skins/mem
     forks/weewx-nws/skins/nws
+    WeeWX-Extras/skins/s3
     forks/weewx-wdc/skins/weewx-wdc
 )
 
@@ -229,7 +225,8 @@ mkdir_p() {
 # Clone a repository unless it is already checked out. A directory that is not a
 # git checkout is an error rather than something to clone over, and a clone with
 # a different origin is reported but left alone: the remote may have been
-# swapped deliberately.
+# swapped deliberately. The `.git` suffix is optional in a remote URL, so it is
+# ignored when the two are compared.
 clone() {
     local url=$1
     local dir=$2
@@ -241,7 +238,7 @@ clone() {
             return 1
         fi
         origin=$(git -C "${dir}" remote get-url origin 2>/dev/null)
-        if [ -n "${origin}" ] && [ "${origin}" != "${url}" ]; then
+        if [ -n "${origin}" ] && [ "${origin%.git}" != "${url%.git}" ]; then
             echo "  warn    ${dir} has origin ${origin}, not ${url}"
         fi
         skip "${dir}"
@@ -377,23 +374,14 @@ link() {
     perform "${dest} -> ${target}" ln -sfn "${target}" "${dest}"
 }
 
-# Link a whole list of sources into one directory. An entry is a path beneath
-# WEEWX_CODE_ROOT, or that path and the name to link it as when the two differ.
+# Link a whole list of sources into one directory, each under its own name.
 link_all() {
     local dir=$1
-    local entry
     local source
-    local name
 
     shift
-    for entry in "$@"; do
-        source=${entry%% *}
-        if [ "${source}" = "${entry}" ]; then
-            name=$(basename "${source}")
-        else
-            name=${entry#* }
-        fi
-        link "${WEEWX_CODE_ROOT}/${source}" "${dir}" "${name}"
+    for source in "$@"; do
+        link "${WEEWX_CODE_ROOT}/${source}" "${dir}" "$(basename "${source}")"
     done
 }
 
@@ -449,6 +437,7 @@ link_all "${WEEWX_DATA_DIR}/skins" "${SKINS[@]}"
 # pip install paho.mqtt
 # pip install jplephem
 # pip install skyfield
+# pip install boto3 six   # for the AWS-S3 report's upload generator
 
 echo
 if [ "${dry_run}" -eq 1 ]; then
