@@ -425,7 +425,7 @@ link_all "${WEEWX_DATA_DIR}/skins" "${SKINS[@]}"
 # repository, and listing the WeeWX versions. Run them by hand until they have a
 # tracked home.
 # "${WEEWX_CODE_ROOT}/configs/extensions/development-config.sh"
-# "${WEEWX_CODE_ROOT}/WeeWX-Extras/utils/listVersions.py"
+# "${WEEWX_CODE_ROOT}/weewx-extensions/development-tools/tools/listVersions.py"
 
 # The dependencies belong to an interpreter, and each pyenv version has its own,
 # so they are installed by hand rather than from here:

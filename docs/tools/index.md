@@ -39,7 +39,7 @@ It leaves to the operator the rest of the provisioning:
 
 - Assembling the station's `weewx.conf` from the fragments in the `configs` repository:
   `configs/extensions/development-config.sh`.
-- Listing the WeeWX versions the tools should be checked against: `WeeWX-Extras/utils/listVersions.py`.
+- Listing the WeeWX versions the tools should be checked against: `weewx-extensions/development-tools/tools/listVersions.py`.
 - Installing the per-interpreter dependencies: `pyenv install`, then per version
   `pip install configobj`, `pip install ct3`, `pip install Pillow`, `pip install paho.mqtt`,
   `pip install jplephem`, `pip install skyfield`, and `pip install boto3 six` for the AWS-S3
