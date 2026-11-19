@@ -64,6 +64,11 @@ BRANCHES=(
     "weewx-skyfield file_location"
 )
 
+# The released WeeWX versions unpacked side by side, oldest and latest as the
+# workflow matrix pins them, and where they come from.
+WEEWX_VERSIONS=(5.5.2 5.0.0)
+WEEWX_RELEASES_URL='https://weewx.com/downloads/released_versions'
+
 usage() {
     cat <<'EOF'
 Usage: setup.sh [--dry-run]
@@ -235,6 +240,73 @@ checkout_branches() {
     done
 }
 
+# Download one release and unpack it next to the others. The tarball is dropped
+# whether or not the unpack worked, so a failure leaves no half-download behind.
+download_release() {
+    local version=$1
+    local releases="${WEEWX_CODE_ROOT}/weewx-releases"
+    local tarball="${releases}/weewx-${version}.tgz"
+
+    if ! curl -fsSL -o "${tarball}" "${WEEWX_RELEASES_URL}/weewx-${version}.tgz"; then
+        rm -f "${tarball}"
+        return 1
+    fi
+    if ! tar -xzf "${tarball}" -C "${releases}"; then
+        rm -f "${tarball}"
+        return 1
+    fi
+    rm -f "${tarball}"
+}
+
+# curl rather than wget: macOS does not ship wget.
+fetch_releases() {
+    local version
+
+    mkdir_p "${WEEWX_CODE_ROOT}/weewx-releases"
+    for version in "${WEEWX_VERSIONS[@]}"; do
+        if [ -d "${WEEWX_CODE_ROOT}/weewx-releases/weewx-${version}" ]; then
+            skip "${WEEWX_CODE_ROOT}/weewx-releases/weewx-${version}"
+            continue
+        fi
+        perform "${WEEWX_CODE_ROOT}/weewx-releases/weewx-${version}" \
+            download_release "${version}"
+    done
+}
+
+# Point DIR/NAME at TARGET. A link that is already there is repaired, never
+# ignored; a real file is an error, because the script does not delete what it
+# did not create.
+link() {
+    local target=$1
+    local dir=$2
+    local name=$3
+    local dest="${dir}/${name}"
+    local current
+
+    if [ ! -e "${target}" ]; then
+        fail "${dest} -> ${target}: target does not exist"
+        return 1
+    fi
+    if [ ! -d "${dir}" ]; then
+        fail "${dir} does not exist, cannot link ${name} into it"
+        return 1
+    fi
+    if [ -L "${dest}" ]; then
+        current=$(readlink "${dest}")
+        if [ "${current}" = "${target}" ]; then
+            skip "${dest} -> ${target}"
+            return 0
+        fi
+        perform "${dest} -> ${target} (was ${current})" ln -sfn "${target}" "${dest}"
+        return 0
+    fi
+    if [ -e "${dest}" ]; then
+        fail "${dest} exists and is not a link"
+        return 1
+    fi
+    perform "${dest} -> ${target}" ln -sfn "${target}" "${dest}"
+}
+
 if [ "${dry_run}" -eq 1 ]; then
     echo "Dry run: nothing will be changed."
 fi
@@ -245,21 +317,16 @@ checkout_branches "${WEEWX_CODE_ROOT}/forks"
 clone_into "${WEEWX_CODE_ROOT}/weewx-extensions" "${EXTENSION_REPOS[@]}"
 clone_into "${WEEWX_CODE_ROOT}/weewx-mqtt" "${MQTT_REPOS[@]}"
 
-mkdir_p "${WEEWX_CODE_ROOT}/weewx-releases"
-wget -P "${WEEWX_CODE_ROOT}/weewx-releases" https://weewx.com/downloads/released_versions/weewx-5.5.2.tgz 
-tar -xzf "${WEEWX_CODE_ROOT}/weewx-releases/weewx-5.5.2.tgz" -C "${WEEWX_CODE_ROOT}/weewx-releases/"
-rm "${WEEWX_CODE_ROOT}/weewx-releases/weewx-5.5.2.tgz"
+fetch_releases
+clone git@github.com:weewx/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-clone"
+clone git@github.com:bellrichm/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork"
 
-wget -P "${WEEWX_CODE_ROOT}/weewx-releases" https://weewx.com/downloads/released_versions/weewx-5.0.0.tgz 
-tar -xzf "${WEEWX_CODE_ROOT}/weewx-releases/weewx-5.0.0.tgz" -C "${WEEWX_CODE_ROOT}/weewx-releases/"
-rm "${WEEWX_CODE_ROOT}/weewx-releases/weewx-5.0.0.tgz"
-
-git clone git@github.com:weewx/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-clone"
-git clone git@github.com:bellrichm/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork"
-ln -s ../weewx-releases/weewx-fork "${WEEWX_CODE_ROOT}/weewx-mqtt"
-ln -s ../weewx-releases/weewx-clone "${WEEWX_CODE_ROOT}/weewx-mqtt"
-
-ln -s "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" weewx
+# The two aliases the tools and the extensions expect: weewx-mqtt/weewx-fork is
+# the fork, weewx-mqtt/weewx is what an extension looks up, and the link in the
+# current directory is the checkout everything else is run from.
+link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-mqtt" weewx-fork
+link "${WEEWX_CODE_ROOT}/weewx-mqtt/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-mqtt" weewx
+link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${PWD}" weewx
 
 ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/aqi-xtype/bin/user/aqitype.py" "${WEEWX_DATA_DIR}/bin/user"
 ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/bin/user/backup.py" "${WEEWX_DATA_DIR}/bin/user"
