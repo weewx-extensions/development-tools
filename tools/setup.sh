@@ -30,7 +30,7 @@ PYTHON="${PYTHON:-python3}"
 ROOT_REPOS=(
     git@github.com:bellrichm/WeeWX-Extras
     git@github.com:bellrichm/configs
-    git://rmbell.local/secrets
+    richbell@rmbell.local:/home/richbell/git-repos/secrets
 )
 FORK_REPOS=(
     git@github.com:bellrichm/fuzzy-archer
