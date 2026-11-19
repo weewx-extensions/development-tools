@@ -428,16 +428,9 @@ link_all "${WEEWX_DATA_DIR}/skins" "${SKINS[@]}"
 # "${WEEWX_CODE_ROOT}/weewx-extensions/development-tools/tools/listVersions.py"
 
 # The dependencies belong to an interpreter, and each pyenv version has its own,
-# so they are installed by hand rather than from here:
-# pyenv install 3.15
-# pyenv global 3.15
-# pip install configobj
-# pip install ct3
-# pip install Pillow
-# pip install paho.mqtt
-# pip install jplephem
-# pip install skyfield
-# pip install boto3 six   # for the AWS-S3 report's upload generator
+# so they are installed by hand rather than from here. The helper installs a
+# version and the pip dependencies the tools and extensions need:
+# ${WEEWX_CODE_ROOT}/weewx-extensions/development-tools/tools/installPython.sh 3.15
 
 echo
 if [ "${dry_run}" -eq 1 ]; then
