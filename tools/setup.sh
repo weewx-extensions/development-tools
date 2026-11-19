@@ -9,8 +9,8 @@
 #    weewx-data links that point at them.
 #
 #    Run it from $HOME, which every path in it is relative to. It is a proof of
-#    concept and not yet re-runnable: the clones and links below still fail on a
-#    second run.
+#    concept and not yet re-runnable: the two commands after the links still run
+#    unconditionally.
 #
 set -uo pipefail
 
@@ -68,6 +68,78 @@ BRANCHES=(
 # workflow matrix pins them, and where they come from.
 WEEWX_VERSIONS=(5.5.2 5.0.0)
 WEEWX_RELEASES_URL='https://weewx.com/downloads/released_versions'
+
+# The extension modules linked into the station's bin/user, and the skins linked
+# into its skins directory. An entry is a path beneath WEEWX_CODE_ROOT; a second
+# word names the link when it is not the source's basename.
+USER_MODULES=(
+    weewx-extensions/aqi-xtype/bin/user/aqitype.py
+    WeeWX-Extras/bin/user/backup.py
+    forks/weewx-belchertown/bin/user/belchertown.py
+    forks/weewx-celestial/bin/user/celestial.py
+    forks/weewx-celestial/bin/user/celestial_page.py
+    forks/weewx-celestial/bin/user/celestial_sky.py
+    forks/weewx-cmon/bin/user/cmon.py
+    weewx-extensions/healthchecks/bin/user/healthchecks.py
+    forks/fuzzy-archer/bin/user/historygenerator.py
+    weewx-extensions/jas/bin/user/jas.py
+    weewx-extensions/jas/bin/user/jas_templates.py
+    forks/fuzzy-archer/bin/user/jsonengine.py
+    forks/fuzzy-archer/bin/user/largeimagegenerator.py
+    forks/weewx-loopdata/bin/user/loopdata.py
+    forks/vds-weewx-v3-mem-extension/bin/user/mem.py
+    weewx-mqtt/publish/bin/user/mqttaggregatevalues.py
+    weewx-mqtt/publish/bin/user/mqttarchivevalues.py
+    weewx-mqtt/mqttcommon/bin/user/mqttcommon.py
+    weewx-mqtt/publish/bin/user/mqttconfigha.py
+    weewx-mqtt/publish/bin/user/mqtthaconfig.py
+    weewx-mqtt/plugin-loopdata/bin/user/mqttloopdata.py
+    weewx-mqtt/publish/bin/user/mqttmessagetracker.py
+    weewx-mqtt/publish/bin/user/mqttpublish.py
+    weewx-mqtt/replicate/bin/user/mqttreplicate.py
+    weewx-mqtt/subscribe/bin/user/mqttsubscribe.py
+    weewx-mqtt/publish/bin/user/mqtttracker.py
+    weewx-extensions/pushover/bin/user/notify.py
+    forks/weewx-nws/bin/user/nws.py
+    WeeWX-Extras/bin/user/observationtime.py
+    weewx-extensions/pushover/bin/user/pushover.py
+    WeeWX-Extras/bin/user/replicatedb.py
+    weewx-mqtt/replicate/bin/user/run_mqttreplicate.py
+    WeeWX-Extras/bin/user/runreports.py
+    forks/fuzzy-archer/bin/user/sunevents.py
+    forks/weewx-wdc/bin/user/weewx_wdc.py
+    forks/weewx-skyfield/bin/user/wxskyfield.py
+    forks/weewx-skyfield/bin/user/wxskyfield_de421.bsp
+    forks/weewx-skyfield/bin/user/wxskyfield_lines.dat
+    forks/weewx-skyfield/bin/user/wxskyfield_sky.py
+    forks/weewx-skyfield/bin/user/wxskyfield_stars.dat.gz
+    forks/weewx-xaggs/bin/user/xaggs.py
+)
+SKINS=(
+    forks/weewx-belchertown/skins/Belchertown
+    forks/fuzzy-archer/skins/Bootstrap
+    forks/weewx-celestial/skins/Celestial
+    # Horizon arrived in WeeWX 5.1, and the fork predates it, so take it from
+    # the newest release rather than from the checkout the station runs.
+    "weewx-releases/weewx-${WEEWX_VERSIONS[0]}/src/weewx_data/skins/Horizon Horizon"
+    forks/weewx-loopdata/skins/LoopData
+    forks/weewx-celestial/skins/MQTTCelestial
+    weewx-mqtt/plugin-loopdata/skins/MQTTLoopData
+    forks/weewx-loopdata/skins/ScriptData
+    forks/weewx-skyfield/skins/Skyfield
+    weewx-extensions/aqi-xtype/skins/aqitype
+    forks/weewx-cmon/skins/cmon
+    # A directory of skins rather than a skin. Its name is not arbitrary: the
+    # Production report reaches into it as `skin = custom/Production`, and that
+    # line comes from configs/extensions/stdreport/production.conf.
+    "WeeWX-Extras/skins custom"
+    WeeWX-Extras/skins/develop
+    weewx-extensions/healthchecks/skins/healthchecks
+    weewx-extensions/jas/skins/jas
+    forks/vds-weewx-v3-mem-extension/skins/mem
+    forks/weewx-nws/skins/nws
+    forks/weewx-wdc/skins/weewx-wdc
+)
 
 usage() {
     cat <<'EOF'
@@ -307,6 +379,26 @@ link() {
     perform "${dest} -> ${target}" ln -sfn "${target}" "${dest}"
 }
 
+# Link a whole list of sources into one directory. An entry is a path beneath
+# WEEWX_CODE_ROOT, or that path and the name to link it as when the two differ.
+link_all() {
+    local dir=$1
+    local entry
+    local source
+    local name
+
+    shift
+    for entry in "$@"; do
+        source=${entry%% *}
+        if [ "${source}" = "${entry}" ]; then
+            name=$(basename "${source}")
+        else
+            name=${entry#* }
+        fi
+        link "${WEEWX_CODE_ROOT}/${source}" "${dir}" "${name}"
+    done
+}
+
 if [ "${dry_run}" -eq 1 ]; then
     echo "Dry run: nothing will be changed."
 fi
@@ -328,68 +420,17 @@ link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-mq
 link "${WEEWX_CODE_ROOT}/weewx-mqtt/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-mqtt" weewx
 link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${PWD}" weewx
 
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/aqi-xtype/bin/user/aqitype.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/bin/user/backup.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-belchertown/bin/user/belchertown.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/plugin-loopdata/bin/user/mqttloopdata.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-celestial/bin/user/celestial_page.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-celestial/bin/user/celestial_sky.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-celestial/bin/user/celestial.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-cmon/bin/user/cmon.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/healthchecks/bin/user/healthchecks.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/fuzzy-archer/bin/user/historygenerator.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/jas/bin/user/jas_templates.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/jas/bin/user/jas.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/fuzzy-archer/bin/user/jsonengine.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/fuzzy-archer/bin/user/largeimagegenerator.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-loopdata/bin/user/loopdata.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/vds-weewx-v3-mem-extension/bin/user/mem.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqttaggregatevalues.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqttarchivevalues.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/mqttcommon/bin/user/mqttcommon.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqttconfigha.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqtthaconfig.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/plugin-loopdata/bin/user/mqttloopdata.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqttmessagetracker.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqttpublish.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/replicate/bin/user/mqttreplicate.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/subscribe/bin/user/mqttsubscribe.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/publish/bin/user/mqtttracker.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/pushover/bin/user/notify.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-nws/bin/user/nws.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/bin/user/observationtime.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/pushover/bin/user/pushover.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/bin/user/replicatedb.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/replicate/bin/user/run_mqttreplicate.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/bin/user/runreports.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/fuzzy-archer/bin/user/sunevents.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-wdc/bin/user/weewx_wdc.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-skyfield/bin/user/wxskyfield_de421.bsp" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-skyfield/bin/user/wxskyfield_lines.dat" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-skyfield/bin/user/wxskyfield_sky.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-skyfield/bin/user/wxskyfield_stars.dat.gz" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-skyfield/bin/user/wxskyfield.py" "${WEEWX_DATA_DIR}/bin/user"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-xaggs/bin/user/xaggs.py" "${WEEWX_DATA_DIR}/bin/user"
+# The station has to exist before anything can be linked into it, and an
+# existing one is left alone: creating it again would discard its configuration.
+if [ -e "${WEEWX_DATA_DIR}/weewx.conf" ]; then
+    skip "${WEEWX_DATA_DIR}"
+else
+    perform "${WEEWX_DATA_DIR}" "${PYTHON}" "${PWD}/weewx/src/weectl.py" \
+        station create "${WEEWX_DATA_DIR}" --no-prompt
+fi
 
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/aqi-xtype/skins/aqitype" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-belchertown/skins/Belchertown" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/fuzzy-archer/skins/Bootstrap" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-celestial/skins/Celestial" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-cmon/skins/cmon" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/skins" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/WeeWX-Extras/skins/develop" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/healthchecks/skins/healthchecks" "${WEEWX_DATA_DIR}/skins"
-ln -s ../../weewx/src/weewx_data/skins/Horizon "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/weewx-extensions/jas/skins/jas" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-loopdata/skins/LoopData" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/vds-weewx-v3-mem-extension/skins/mem" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-celestial/skins/MQTTCelestial" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/weewx-mqtt/plugin-loopdata/skins/MQTTLoopData" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-nws/skins/nws" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-loopdata/skins/ScriptData" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-skyfield/skins/Skyfield" "${WEEWX_DATA_DIR}/skins"
-ln -s "${WEEWX_CODE_ROOT}/forks/weewx-wdc/skins/weewx-wdc" "${WEEWX_DATA_DIR}/skins"
-
+link_all "${WEEWX_DATA_DIR}/bin/user" "${USER_MODULES[@]}"
+link_all "${WEEWX_DATA_DIR}/skins" "${SKINS[@]}"
 
 "${WEEWX_CODE_ROOT}/configs/extensions/development-config.sh"
 
@@ -403,9 +444,6 @@ ln -s "${WEEWX_CODE_ROOT}/forks/weewx-wdc/skins/weewx-wdc" "${WEEWX_DATA_DIR}/sk
 # pip install paho.mqtt
 # pip install jplephem
 # pip install skyfield
-
-
-${PYTHON} weewx/src/weectl.py station create "${WEEWX_DATA_DIR}" --no-prompt
 
 mkdir_p "${WEEWX_DATA_DIR}/run"
 
