@@ -23,6 +23,47 @@ WEEWX_DATA_DIR="${WEEWX_DATA_DIR:-$HOME/weewx-data}"
 # The interpreter the final steps use.
 PYTHON="${PYTHON:-python3}"
 
+# EDIT THESE - the repositories this tree is built from, grouped by the
+# directory they are cloned into, and the two that are worked on a branch other
+# than the default. The clone destination is the URL's basename, which is the
+# name `git clone` would give it.
+ROOT_REPOS=(
+    git@github.com:bellrichm/WeeWX-Extras
+    git@github.com:bellrichm/configs
+    git://rmbell.local/secrets
+)
+FORK_REPOS=(
+    git@github.com:bellrichm/fuzzy-archer
+    git@github.com:bellrichm/vds-weewx-v3-mem-extension
+    git@github.com:bellrichm/weewx-belchertown
+    git@github.com:bellrichm/weewx-celestial
+    git@github.com:bellrichm/weewx-cmon
+    git@github.com:bellrichm/weewx-loopdata
+    git@github.com:bellrichm/weewx-nws
+    git@github.com:bellrichm/weewx-skyfield
+    git@github.com:bellrichm/weewx-wdc
+    git@github.com:bellrichm/weewx-xaggs
+)
+EXTENSION_REPOS=(
+    git@github.com:weewx-extensions/aqi-xtype
+    git@github.com:weewx-extensions/development-tools
+    git@github.com:weewx-extensions/jas
+    git@github.com:weewx-extensions/healthchecks
+    git@github.com:weewx-extensions/pushover
+    git@github.com:weewx-extensions/test
+)
+MQTT_REPOS=(
+    git@github.com:weewx-mqtt/mqttcommon
+    git@github.com:weewx-mqtt/plugin-loopdata
+    git@github.com:weewx-mqtt/publish
+    git@github.com:weewx-mqtt/replicate
+    git@github.com:weewx-mqtt/subscribe
+)
+BRANCHES=(
+    "weewx-celestial mqtt"
+    "weewx-skyfield file_location"
+)
+
 usage() {
     cat <<'EOF'
 Usage: setup.sh [--dry-run]
@@ -36,8 +77,8 @@ Run it from $HOME.
 EOF
 }
 
-# --dry-run covers the mkdirs below for now; the clones, downloads and links
-# join it as each is converted to one of these helpers.
+# --dry-run covers the mkdirs and clones below for now; the release downloads,
+# links and station setup join it as each is converted to one of these helpers.
 dry_run=0
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -57,6 +98,14 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# The release downloads, the links and the station setup below do not go through
+# the helpers yet, so a dry run would still clone, link and create a station for
+# real. Refuse rather than half-promise; this goes when step 7 converts them.
+if [ "${dry_run}" -eq 1 ]; then
+    echo "setup.sh: --dry-run is not available yet: the release downloads, links and station setup still run for real." >&2
+    exit 2
+fi
+
 # Every action reports one of create, skip or error, so a run says what it did
 # and a re-run after fixing one problem resumes where the broken run stopped.
 # The counts are summed at the end, and any error makes the script exit non-zero.
@@ -74,14 +123,19 @@ skip() {
     skipped=$((skipped + 1))
 }
 
+# A create that a dry run must report without doing.
+would() {
+    echo "  create  $*"
+    created=$((created + 1))
+}
+
 # Run a command, or with --dry-run report the command that would have run.
 perform() {
     local description=$1
     shift
 
     if [ "${dry_run}" -eq 1 ]; then
-        echo "  create  ${description}"
-        created=$((created + 1))
+        would "${description}"
         return 0
     fi
     if "$@"; then
@@ -104,47 +158,92 @@ mkdir_p() {
     perform "${dir}" mkdir -p "${dir}"
 }
 
+# Clone a repository unless it is already checked out. A directory that is not a
+# git checkout is an error rather than something to clone over, and a clone with
+# a different origin is reported but left alone: the remote may have been
+# swapped deliberately.
+clone() {
+    local url=$1
+    local dir=$2
+    local origin
+
+    if [ -e "${dir}" ]; then
+        if [ ! -d "${dir}/.git" ]; then
+            fail "${dir} exists and is not a git checkout"
+            return 1
+        fi
+        origin=$(git -C "${dir}" remote get-url origin 2>/dev/null)
+        if [ -n "${origin}" ] && [ "${origin}" != "${url}" ]; then
+            echo "  warn    ${dir} has origin ${origin}, not ${url}"
+        fi
+        skip "${dir}"
+        return 0
+    fi
+    perform "${dir}" git clone --quiet "${url}" "${dir}"
+}
+
+# Put a clone on the branch it is worked on, without ever discarding local work.
+checkout_branch() {
+    local dir=$1
+    local branch=$2
+    local current
+
+    if [ ! -d "${dir}/.git" ]; then
+        # A dry run reported a clone that has not happened, so the checkout it
+        # would need cannot be inspected.
+        if [ "${dry_run}" -eq 1 ]; then
+            would "${dir} on ${branch}"
+            return 0
+        fi
+        fail "${dir} is not a git checkout, cannot switch to ${branch}"
+        return 1
+    fi
+    current=$(git -C "${dir}" rev-parse --abbrev-ref HEAD 2>/dev/null)
+    if [ "${current}" = "${branch}" ]; then
+        skip "${dir} is on ${branch}"
+        return 0
+    fi
+    if [ -n "$(git -C "${dir}" status --porcelain 2>/dev/null)" ]; then
+        fail "${dir} has local changes, left on ${current} rather than ${branch}"
+        return 1
+    fi
+    perform "${dir} on ${branch}" git -C "${dir}" checkout "${branch}"
+}
+
+# Clone a group of repositories into one directory.
+clone_into() {
+    local dir=$1
+    local url
+
+    shift
+    mkdir_p "${dir}"
+    for url in "$@"; do
+        clone "${url}" "${dir}/$(basename "${url}")"
+    done
+}
+
+# Check out the BRANCHES list in the directory those repositories live in.
+checkout_branches() {
+    local dir=$1
+    local entry
+
+    if [ "${#BRANCHES[@]}" -eq 0 ]; then
+        return 0
+    fi
+    for entry in "${BRANCHES[@]}"; do
+        checkout_branch "${dir}/${entry%% *}" "${entry#* }"
+    done
+}
+
 if [ "${dry_run}" -eq 1 ]; then
     echo "Dry run: nothing will be changed."
 fi
 
-mkdir_p "${WEEWX_CODE_ROOT}"
-
-
-
-git clone git@github.com:bellrichm/WeeWX-Extras "${WEEWX_CODE_ROOT}/WeeWX-Extras"
-git clone git@github.com:bellrichm/configs "${WEEWX_CODE_ROOT}/configs"
-git clone git://rmbell.local/secrets "${WEEWX_CODE_ROOT}/secrets"
-
-mkdir_p "${WEEWX_CODE_ROOT}/forks"
-git clone git@github.com:bellrichm/fuzzy-archer "${WEEWX_CODE_ROOT}/forks/fuzzy-archer"
-git clone git@github.com:bellrichm/vds-weewx-v3-mem-extension "${WEEWX_CODE_ROOT}/forks/vds-weewx-v3-mem-extension"
-git clone git@github.com:bellrichm/weewx-belchertown "${WEEWX_CODE_ROOT}/forks/weewx-belchertown"
-git clone git@github.com:bellrichm/weewx-celestial "${WEEWX_CODE_ROOT}/forks/weewx-celestial"
-git clone git@github.com:bellrichm/weewx-cmon "${WEEWX_CODE_ROOT}/forks/weewx-cmon"
-git clone git@github.com:bellrichm/weewx-loopdata "${WEEWX_CODE_ROOT}/forks/weewx-loopdata"
-git clone git@github.com:bellrichm/weewx-nws "${WEEWX_CODE_ROOT}/forks/weewx-nws"
-git clone git@github.com:bellrichm/weewx-skyfield "${WEEWX_CODE_ROOT}/forks/weewx-skyfield"
-git clone git@github.com:bellrichm/weewx-wdc "${WEEWX_CODE_ROOT}/forks/weewx-wdc"
-git clone git@github.com:bellrichm/weewx-xaggs "${WEEWX_CODE_ROOT}/forks/weewx-xaggs"
-
-git -C "${WEEWX_CODE_ROOT}/forks/weewx-celestial" checkout mqtt
-git -C "${WEEWX_CODE_ROOT}/forks/weewx-skyfield" checkout file_location
-
-mkdir_p "${WEEWX_CODE_ROOT}/weewx-extensions"
-git clone git@github.com:weewx-extensions/aqi-xtype "${WEEWX_CODE_ROOT}/weewx-extensions/aqi-xtype"
-git clone git@github.com:weewx-extensions/development-tools "${WEEWX_CODE_ROOT}/weewx-extensions/development-tools"
-git clone git@github.com:weewx-extensions/jas "${WEEWX_CODE_ROOT}/weewx-extensions/jas"
-git clone git@github.com:weewx-extensions/healthchecks "${WEEWX_CODE_ROOT}/weewx-extensions/healthchecks"
-git clone git@github.com:weewx-extensions/pushover "${WEEWX_CODE_ROOT}/weewx-extensions/pushover"
-git clone git@github.com:weewx-extensions/test "${WEEWX_CODE_ROOT}/weewx-extensions/test"
-
-mkdir_p "${WEEWX_CODE_ROOT}/weewx-mqtt"
-git clone git@github.com:weewx-mqtt/mqttcommon "${WEEWX_CODE_ROOT}/weewx-mqtt/mqttcommon"
-git clone git@github.com:weewx-mqtt/plugin-loopdata "${WEEWX_CODE_ROOT}/weewx-mqtt/plugin-loopdata"
-git clone git@github.com:weewx-mqtt/publish "${WEEWX_CODE_ROOT}/weewx-mqtt/publish"
-git clone git@github.com:weewx-mqtt/replicate "${WEEWX_CODE_ROOT}/weewx-mqtt/replicate"
-git clone git@github.com:weewx-mqtt/subscribe "${WEEWX_CODE_ROOT}/weewx-mqtt/subscribe"
+clone_into "${WEEWX_CODE_ROOT}" "${ROOT_REPOS[@]}"
+clone_into "${WEEWX_CODE_ROOT}/forks" "${FORK_REPOS[@]}"
+checkout_branches "${WEEWX_CODE_ROOT}/forks"
+clone_into "${WEEWX_CODE_ROOT}/weewx-extensions" "${EXTENSION_REPOS[@]}"
+clone_into "${WEEWX_CODE_ROOT}/weewx-mqtt" "${MQTT_REPOS[@]}"
 
 mkdir_p "${WEEWX_CODE_ROOT}/weewx-releases"
 wget -P "${WEEWX_CODE_ROOT}/weewx-releases" https://weewx.com/downloads/released_versions/weewx-5.5.2.tgz 
