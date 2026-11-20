@@ -61,6 +61,7 @@ MQTT_REPOS=(
 )
 WORKSPACE_REPOS=(
     git@github.com:weewx-mqtt/workspace
+    git@github.com:weewx-extensions/workspace
 )
 CONTRIB_REPOS=(
     git@github.com:weewx-contrib/healthchecks
