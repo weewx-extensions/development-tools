@@ -16,6 +16,8 @@ In the workflows-template directory are some rudimentary templates that can be u
 
 ### stale
 
+### swh-save
+
 ### versioning
 
 ### run-fetch

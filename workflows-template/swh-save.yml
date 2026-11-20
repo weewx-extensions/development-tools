@@ -1,0 +1,11 @@
+name: Save the repository to the Software Heritage Archive
+
+on:
+  push:
+    tags:
+    - '*'
+  workflow_dispatch:
+
+jobs:
+  swh-save:
+    uses: weewx-extensions/development-tools/.github/workflows/swh-save.yml@latest

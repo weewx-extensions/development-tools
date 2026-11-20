@@ -8,9 +8,9 @@
 #    with --check, report the ones that have gone stale.
 #
 #    analyze-test, analyze-test-matrix, perform-analyze-test, and fetch follow
-#    the development-tools major version tag; stale and versioning follow
-#    latest. The major version is this repository's own config-ref default, so
-#    a release moves the refs the same way it moves the config files.
+#    the development-tools major version tag; swh-save, stale and versioning
+#    follow latest. The major version is this repository's own config-ref
+#    default, so a release moves the refs the same way it moves the config files.
 #
 set -uo pipefail
 
@@ -46,7 +46,7 @@ USES_RE="uses:[[:space:]]+${WORKFLOW_PATH//./\\.}"
 expected_ref() {
     case "$1" in
         analyze-test|analyze-test-matrix|perform-analyze-test|fetch) echo "${MAJOR}" ;;
-        stale|versioning) echo 'latest' ;;
+        swh-save|stale|versioning) echo 'latest' ;;
         *) echo '' ;;
     esac
 }

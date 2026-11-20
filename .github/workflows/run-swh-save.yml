@@ -1,0 +1,13 @@
+name: Save the repository to the Software Heritage Archive
+
+on:
+  push:
+    tags:
+    - '*'
+  workflow_dispatch:
+
+jobs:
+  swh-save:
+    # The local workflow, not the published one: a release's tag runs this
+    # before versioning.yml has moved @latest to the new release.
+    uses: ./.github/workflows/swh-save.yml

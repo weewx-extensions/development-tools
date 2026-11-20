@@ -22,7 +22,7 @@ templates, and a sample extension the tooling is exercised against.
 
 | path | what it is |
 | --- | --- |
-| `.github/workflows/` | The reusable workflows (`analyze-test`, `analyze-test-matrix`, `perform-analyze-test`, `fetch`, `stale`, `versioning`) plus thin `run-*` callers that test this repository's own published refs. |
+| `.github/workflows/` | The reusable workflows (`analyze-test`, `analyze-test-matrix`, `perform-analyze-test`, `fetch`, `swh-save`, `stale`, `versioning`) plus thin `run-*` callers that test this repository's own published refs. |
 | `tools/` | The local scripts; `verify.sh` runs all of them and `common.sh` holds the shared defaults. |
 | `config/` | The **published** configs (`.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`, `.codacy.yaml`, `requirements.txt`), copied into consumers by `configs.sh`. |
 | `workflows-template/` | The caller workflows a consumer copies into its `.github/workflows/`. |

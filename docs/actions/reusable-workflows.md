@@ -123,6 +123,16 @@ script.
 A workflow that will mark 'inactive' issues as stale.
 If there is no activity against the stale issue, it will be closed.
 
+### swh-save
+
+Sends a request to the [Software Heritage Archive](https://archive.softwareheritage.org/) to save
+the repository the workflow runs in. The archive queues the request rather than saving
+immediately; its progress is listed at
+[the save requests page](https://archive.softwareheritage.org/save/#requests), under the
+repository's name.
+
+Run it on tags rather than on every push, so as not to overburden the archive's API.
+
 ### versioning
 
 Create and keep up to date tags for `@latest`, `@Vx`, and `@Vx.y`, where x is the major version
