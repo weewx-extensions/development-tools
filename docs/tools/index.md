@@ -102,6 +102,7 @@ configured.
 | `build-pythons.sh` | Rebuilds pyenv interpreters against Homebrew's SQLite (and the OpenSSL each one uses); `--verify-only` checks them. macOS only. | - |
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
 | `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
+| `update-repos.sh` | Pulls the checkouts in a directory and updates their tags. | - |
 
 `configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so
 `verify.sh` passes in a repository that keeps only some of them. `development-tools` itself is one:
