@@ -1,4 +1,4 @@
-name: Save the repository to the Software Heritage Archive
+name: Run Software Heritage save workflow
 
 on:
   push:
