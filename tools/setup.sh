@@ -5,8 +5,8 @@
 #    See the file LICENSE.txt for your full rights.
 #
 #    Provision a development machine with the tree the tools expect: the
-#    extension, fork and WeeWX repositories, the WeeWX releases, and the
-#    weewx-data links that point at them.
+#    extension, fork, contrib and WeeWX repositories, the WeeWX releases, and
+#    the weewx-data links that point at them.
 #
 #    Run it from $HOME, which every path in it is relative to. A second run
 #    leaves the tree as it is; the two steps it does not own are commented out
@@ -58,6 +58,13 @@ MQTT_REPOS=(
     git@github.com:weewx-mqtt/publish
     git@github.com:weewx-mqtt/replicate
     git@github.com:weewx-mqtt/subscribe
+)
+CONTRIB_REPOS=(
+    git@github.com:weewx-contrib/healthchecks
+    git@github.com:weewx-contrib/jas
+    git@github.com:weewx-contrib/mqttpublish
+    git@github.com:weewx-contrib/mqttreplicate
+    git@github.com:weewx-contrib/mqttsubscribe
 )
 BRANCHES=(
     "weewx-celestial mqtt"
@@ -394,6 +401,7 @@ clone_into "${WEEWX_CODE_ROOT}/forks" "${FORK_REPOS[@]}"
 checkout_branches "${WEEWX_CODE_ROOT}/forks"
 clone_into "${WEEWX_CODE_ROOT}/weewx-extensions" "${EXTENSION_REPOS[@]}"
 clone_into "${WEEWX_CODE_ROOT}/weewx-mqtt" "${MQTT_REPOS[@]}"
+clone_into "${WEEWX_CODE_ROOT}/weewx-contrib" "${CONTRIB_REPOS[@]}"
 
 fetch_releases
 clone git@github.com:weewx/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-clone"

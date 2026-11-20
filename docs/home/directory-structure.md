@@ -7,7 +7,8 @@ nav_order: 1
 The tools provided by this repository expect a directory that is like the following.
 This is an example of the shape, not a fixed list: the repositories and releases the tools
 look for are named by the arrays in `tools/setup.sh` (`ROOT_REPOS`, `FORK_REPOS`,
-`EXTENSION_REPOS`, `MQTT_REPOS` and `WEEWX_VERSIONS`), which are the definitive content.
+`EXTENSION_REPOS`, `MQTT_REPOS`, `CONTRIB_REPOS` and `WEEWX_VERSIONS`), which are the definitive
+content.
 
 All of the GitHub organizations, and therefore repositories, are under a single directory.
 In this case the directory is named, `weewx_code`.
@@ -24,6 +25,12 @@ These releases are used to test the extensions with different versions of WeeWX.
 ├── configs
 ├── secrets
 ├── forks
+├── weewx-contrib
+│   ├── healthchecks
+│   ├── jas
+│   ├── mqttpublish
+│   ├── mqttreplicate
+│   └── mqttsubscribe
 ├── weewx-extensions
 │   ├── aqi-xtype
 │   ├── development-tools
