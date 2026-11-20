@@ -407,11 +407,14 @@ fetch_releases
 clone git@github.com:weewx/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-clone"
 clone git@github.com:bellrichm/weewx "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork"
 
-# The two aliases the tools and the extensions expect: weewx-mqtt/weewx-fork is
-# the fork, weewx-mqtt/weewx is what an extension looks up, and the link in the
-# current directory is the checkout everything else is run from.
+# The aliases the tools and the extensions expect: weewx-mqtt/weewx-fork is
+# the fork, and weewx-mqtt/weewx, weewx-extensions/weewx and weewx-contrib/weewx
+# are what a repository looks up. The link in the current directory is the
+# checkout everything else is run from.
 link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-mqtt" weewx-fork
 link "${WEEWX_CODE_ROOT}/weewx-mqtt/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-mqtt" weewx
+link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-extensions" weewx
+link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${WEEWX_CODE_ROOT}/weewx-contrib" weewx
 link "${WEEWX_CODE_ROOT}/weewx-releases/weewx-fork" "${PWD}" weewx
 
 # The station has to exist before anything can be linked into it, and an

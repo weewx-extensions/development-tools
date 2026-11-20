@@ -30,14 +30,16 @@ These releases are used to test the extensions with different versions of WeeWX.
 │   ├── jas
 │   ├── mqttpublish
 │   ├── mqttreplicate
-│   └── mqttsubscribe
+│   ├── mqttsubscribe
+│   └── weewx -> ../weewx-releases/weewx-fork
 ├── weewx-extensions
 │   ├── aqi-xtype
 │   ├── development-tools
 │   ├── healthchecks
 │   ├── jas
 │   ├── pushover
-│   └── test
+│   ├── test
+│   └── weewx -> ../weewx-releases/weewx-fork
 ├── weewx-mqtt
 │   ├── mqttcommon
 │   ├── plugin-loopdata
