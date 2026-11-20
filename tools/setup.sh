@@ -59,6 +59,9 @@ MQTT_REPOS=(
     git@github.com:weewx-mqtt/replicate
     git@github.com:weewx-mqtt/subscribe
 )
+WORKSPACE_REPOS=(
+    git@github.com:weewx-mqtt/workspace
+)
 CONTRIB_REPOS=(
     git@github.com:weewx-contrib/healthchecks
     git@github.com:weewx-contrib/jas
@@ -400,6 +403,11 @@ clone_into "${WEEWX_CODE_ROOT}" "${ROOT_REPOS[@]}"
 clone_into "${WEEWX_CODE_ROOT}/forks" "${FORK_REPOS[@]}"
 checkout_branches "${WEEWX_CODE_ROOT}/forks"
 clone_into "${WEEWX_CODE_ROOT}/weewx-extensions" "${EXTENSION_REPOS[@]}"
+for url in "${WORKSPACE_REPOS[@]}"; do
+    owner="${url##*:}"
+    owner="${owner%%/*}"
+    clone "${url}" "${WEEWX_CODE_ROOT}/${owner}"
+done
 clone_into "${WEEWX_CODE_ROOT}/weewx-mqtt" "${MQTT_REPOS[@]}"
 clone_into "${WEEWX_CODE_ROOT}/weewx-contrib" "${CONTRIB_REPOS[@]}"
 

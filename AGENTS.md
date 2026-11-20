@@ -102,5 +102,5 @@ for the go-ahead; "make this change" is not permission to commit it. Don't pre-s
 ## Cross-repo workflow
 
 A shared change starts **here**: this is the upstream end, and it has no workspace of its own.
-The consumer repositories keep their order of operations in `weewx-mqtt/workspace/AGENTS.md`,
-next to the organizations' sibling checkouts.
+The consumer repositories keep their order of operations in `weewx-mqtt/AGENTS.md`, next to
+the organizations' sibling checkouts.
