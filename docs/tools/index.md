@@ -253,7 +253,7 @@ changes since its last release are:
 git diff latest..HEAD             # working-tree diff against the last release
 git diff --stat latest..HEAD      # summary of what changed since
 git diff --name-only latest..HEAD
-git log --oneline latest.HEAD     # commits since the last release
+git log --oneline latest..HEAD     # commits since the last release
 
 ```
 
