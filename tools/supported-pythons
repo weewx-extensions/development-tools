@@ -1,0 +1,18 @@
+# The Python versions this project supports, oldest first.
+#
+# The first entry is the oldest and the development default, so a newer
+# language feature fails locally rather than in the oldest CI cell. The last is
+# the latest. The ends are exact patch releases because those have to be tested
+# exactly; the middle entries are minor series, and setup-python installs the
+# newest patch release of each.
+#
+# tools/versions.sh reads this file and derives WEEWX_PYTHON_OLDEST,
+# WEEWX_PYTHON_LATEST, and the CI matrix from it. Its --check reports a
+# workflow, .devenv-template, or .devenv that names a different version.
+3.9.13
+3.10
+3.11
+3.12
+3.13
+3.14
+3.15.2

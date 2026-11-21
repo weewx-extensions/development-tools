@@ -20,7 +20,7 @@ and extensions need into it.
 
 Run it from $HOME.
 
-  <python-version>   A pyenv version, for example 3.15.
+  <python-version>   A pyenv version, for example 3.9.13.
 EOF
 }
 
@@ -54,7 +54,7 @@ if ! pyenv global "${python_version}"; then
 fi
 
 echo "Installing pip dependencies into ${python_version}."
-if ! python -m pip install configobj ct3 Pillow paho-mqtt jplephem skyfield boto3 six; then
+if ! PYENV_VERSION="${python_version}" python -m pip install configobj ct3 Pillow paho-mqtt jplephem skyfield boto3 six; then
     echo "  error   pip install failed for ${python_version}." >&2
     exit 1
 fi

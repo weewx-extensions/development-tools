@@ -9,7 +9,9 @@
 #
 set -uo pipefail
 
-. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
+TOOLS_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+. "${TOOLS_DIR}/common.sh"
+. "${TOOLS_DIR}/versions.sh" || exit 1
 
 # The versions CI pins, read from this repository's workflow.
 workflow=$(ls .github/workflows/*analyze-test*.yml 2>/dev/null | head -1)
@@ -46,6 +48,9 @@ echo "Checking ${WEEWX_MODULE_NAME:-the extension}"
 python_version=$(python3 -c 'import platform; print(platform.python_version())' 2>/dev/null)
 if [ -n "${python_version}" ]; then
     ok "python ${python_version}"
+    if ! weewx_python_supported "${python_version}"; then
+        note "not one of the supported versions (${WEEWX_PYTHON_MATRIX[*]})"
+    fi
 else
     fail "python3"
 fi

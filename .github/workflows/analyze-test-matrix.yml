@@ -103,7 +103,7 @@ on:
       latest-python-version:
         required: false
         type: string
-        default: '3.14'
+        default: '3.15.2'
       latest-weewx-version:
         required: false
         type: string
@@ -134,9 +134,12 @@ jobs:
         # When running locally via act, to limit the os versions tested against use the --matrix option
         # For example --matrix os-version:ubuntu-24.04
         os-version: ["ubuntu-24.04", "ubuntu-22.04"]
-        # Specify the exact minimum supported Python version, ie 3.9.13 and not 3.9
-        # Note, 3.9.13 is the oldest version that runs via github actions
-        python-version: ["3.9.13", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
+        # The ends are exact patch releases (3.9.13, not 3.9) because the oldest and the
+        # newest have to be tested exactly; the middle entries are minor series, and
+        # setup-python installs the newest patch release of each. Note, 3.9.13 is the
+        # oldest version that runs via github actions. tools/versions.sh is the source
+        # of truth, and its --check reports a list that has drifted from it.
+        python-version: ["3.9.13", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15.2"]
         weewx-version: ["${{inputs.latest-weewx-version}}"]
         include:
           - weewx-version: ${{inputs.oldest-weewx-version}}

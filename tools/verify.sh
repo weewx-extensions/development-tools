@@ -4,8 +4,9 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-#    Run the environment check, the linters, the config check, and the tests,
-#    reporting every step's result rather than stopping at the first failure.
+#    Run the environment check, the linters, the config and version checks, and
+#    the tests, reporting every step's result rather than stopping at the first
+#    failure.
 #
 set -uo pipefail
 
@@ -18,7 +19,8 @@ Usage: verify.sh [--python VERSION]...
   --python VERSION  Run the environment check and the test suites on this
                     pyenv version. Repeat the option to cover several, for
                     example the oldest and the newest. Lint and the static
-                    checks run once, as the workflow lints a single cell.
+                    checks run once, on the newest supported version, as the
+                    workflow lints a single cell.
   -h, --help        Show this message.
 EOF
 }
@@ -110,6 +112,7 @@ run_on_pythons checkenv "${TOOLS_DIR}/checkenv.sh"
 run lint "${TOOLS_DIR}/lint.sh"
 run actionlint "${TOOLS_DIR}/actionlint.sh"
 run refs "${TOOLS_DIR}/refs.sh" --check
+run versions "${TOOLS_DIR}/versions.sh" --check
 run configs "${TOOLS_DIR}/configs.sh" --check
 run commonrepos "${TOOLS_DIR}/commonrepos.sh" --check
 run_on_pythons alltests "${TOOLS_DIR}/alltests.sh"

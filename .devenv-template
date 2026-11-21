@@ -1,13 +1,8 @@
-# Do not inherit settings from another repository's .devenv.
-unset WEEWX_LINT_PATHS WEEWX_LINT_FAIL WEEWX_TEST_SUITES WEEWX_HTML WEEWX_RESULTS_DIR
-unset WEEWX_COMMON_REPOS WEEWX_COMMON_SRC
+# Bootstrap: the shared settings live in the development-tools checkout.
+WEEWX_TOOL_PATH=${WEEWX_TOOL_PATH:-$HOME/weewx_code/weewx-extensions/development-tools/tools}
+. "${WEEWX_TOOL_PATH}/devenv.sh"
 
 export WEEWX_MODULE_NAME=REPLACE_ME
-
-export WEEWX_PYENV_VERSION='3.10'
-
-export WEEWX_TOOL_PATH=~/weewx_code/weewx-extensions/development-tools/tools
-export WEEWX_PYTHONPATH=bin
 
 # What the analyze-test workflow lints, its lint-paths input.
 # Defaults to bin/user/${WEEWX_MODULE_NAME}.py
@@ -30,4 +25,6 @@ export WEEWX_PYTHONPATH=bin
 # Write the HTML test reports the workflow archives. Needs pytest-html.
 #export WEEWX_HTML=1
 
-PATH=$WEEWX_TOOL_PATH:$PATH
+# devenv.sh sets WEEWX_PYTHONPATH to bin, or bin:../weewx/src until weewx is
+# installed; override it to always use a checkout.
+#export WEEWX_PYTHONPATH=bin:../weewx/src

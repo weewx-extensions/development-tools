@@ -23,7 +23,7 @@ templates, and a sample extension the tooling is exercised against.
 | path | what it is |
 | --- | --- |
 | `.github/workflows/` | The reusable workflows (`analyze-test`, `analyze-test-matrix`, `perform-analyze-test`, `fetch`, `swh-save`, `stale`, `versioning`) plus thin `run-*` callers that test this repository's own published refs. |
-| `tools/` | The local scripts; `verify.sh` runs all of them and `common.sh` holds the shared defaults. |
+| `tools/` | The local scripts; `verify.sh` runs all of them, `common.sh` holds the shared defaults, and `devenv.sh` the settings every repository sources from its `.devenv`. |
 | `config/` | The **published** configs (`.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`, `.codacy.yaml`, `requirements.txt`), copied into consumers by `configs.sh`. |
 | `workflows-template/` | The caller workflows a consumer copies into its `.github/workflows/`. |
 | `docs/`, `docs-template/` | The published Jekyll site, and what a new extension copies. |
@@ -49,6 +49,17 @@ templates, and a sample extension the tooling is exercised against.
   `WEEWX_LINT_FAIL` ↔ `lint-fail`). A new option belongs in the workflow `inputs:`, this file,
   `.devenv-template`, the script that reads it, and `docs/tools/index.md`; leaving one out is
   how the two sides drift.
+- The supported Python versions are defined once, in `tools/supported-pythons`: one per line,
+  oldest first, so the first is the development default and the last is the latest. The ends are
+  exact patch releases and the middle entries are minor series. `tools/versions.sh` reads the
+  file, and the shared `tools/devenv.sh` sources it and selects the first version as the
+  development default, so a newer language feature fails locally rather than in the oldest CI cell.
+  A repository's `.devenv` bootstraps the tool path and sources `devenv.sh`; it must not pin a
+  version of its own, and a version bump edits `supported-pythons` and the matrix literal in
+  `analyze-test-matrix.yml`; `versions.sh --check` (run by `verify.sh`) reports any copy that
+  disagrees, including `latest-python-version` and a `.devenv` that sources nothing. `lint.sh` runs
+  on the newest version regardless, because the pinned pylint 4 needs Python 3.10 and pylint 3
+  reports findings it does not.
 - A new script: `#! /bin/bash`, the copyright block, `set -uo pipefail` (add `-e` only where a
   failure must stop a loop, as the copy scripts do), bash 3.2 — the `/bin/bash` macOS ships, so
   no `local -a` and no `[[ ]]` where `case` will do — Linux **and** macOS, `-h/--help`, a
@@ -56,8 +67,9 @@ templates, and a sample extension the tooling is exercised against.
   Anything macOS-only says so in the header, the row, and its section; `build-pythons.sh` and
   `sqlite-fork-repro.py` are the examples.
 - `verify.sh` runs the steps of one `perform-analyze-test` job and reports every one rather than
-  stopping at the first: `checkenv`, `lint`, `actionlint`, `refs --check`, `configs --check`,
-  `commonrepos --check`, `alltests`. `--python` repeats only the interpreter-dependent steps.
+  stopping at the first: `checkenv`, `lint`, `actionlint`, `refs --check`, `versions --check`,
+  `configs --check`, `commonrepos --check`, `alltests`. `--python` repeats only the
+  interpreter-dependent steps.
 
 ## Checking this repository
 

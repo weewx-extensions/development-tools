@@ -9,7 +9,22 @@
 #
 set -euo pipefail
 
-. "$(cd "$(dirname "$0")" && pwd -P)/common.sh"
+TOOLS_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+. "${TOOLS_DIR}/common.sh"
+. "${TOOLS_DIR}/versions.sh"
+
+# The workflow lints only its newest cell, and requirements.txt pins pylint 4,
+# which needs Python 3.10 or later. pylint 3 also counts `self` as a positional
+# argument and reports findings pylint 4 does not, so linting under the older
+# development default would fail on code CI passes. Lint on the newest version
+# the project supports, whatever interpreter the tests run on.
+if command -v pyenv >/dev/null 2>&1; then
+    if ! PYENV_VERSION="${WEEWX_PYTHON_LATEST}" pyenv version-name >/dev/null 2>&1; then
+        echo "lint.sh: python ${WEEWX_PYTHON_LATEST} is not installed; it is the version the lint runs on." >&2
+        exit 2
+    fi
+fi
+export PYENV_VERSION="${WEEWX_PYTHON_LATEST}"
 
 mkdir -p "${WEEWX_RESULTS_DIR}"
 

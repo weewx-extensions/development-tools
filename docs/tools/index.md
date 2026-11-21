@@ -15,7 +15,9 @@ source .devenv
 verify.sh
 ```
 
-`.devenv` puts `$WEEWX_TOOL_PATH` on `PATH`, so the scripts can be run by name.
+A repository's `.devenv` bootstraps `$WEEWX_TOOL_PATH` and sources the shared
+`tools/devenv.sh`, which puts that directory on `PATH`, selects the development
+default Python from `supported-pythons`, and sets the other shared settings.
 
 The environment check and the test suites can be run on more than one interpreter, one `--python`
 per pyenv version, so the oldest and the newest the project supports are covered in a single pass:
@@ -25,8 +27,16 @@ verify.sh --python 3.9.13 --python 3.15.2
 ```
 
 Only the steps whose result depends on the interpreter are repeated. `lint.sh` and the other
-static checks run once, as the workflow lints a single matrix cell. The versions must already be
-installed in pyenv; a prefix such as `3.9` resolves to the installed version.
+static checks run once, on the newest supported version, as the workflow lints a single matrix
+cell. The versions must already be installed in pyenv; a prefix such as `3.9` resolves to the
+installed version.
+
+The supported versions live in `tools/supported-pythons`, one per line, oldest first: the first is
+the development default and the last is the latest. `tools/versions.sh` reads them, and the tools
+read them from there; `verify.sh` runs its `--check`, which reports a workflow, the
+`.devenv-template`, or a consumer's `.devenv` that disagrees with it, and a `.devenv` that pins a
+version rather than sourcing the shared `devenv.sh`. The development default is the oldest, so a
+newer language feature fails locally rather than in the oldest CI cell.
 
 ## Provisioning a development machine
 
@@ -40,7 +50,8 @@ It leaves to the operator the rest of the provisioning:
 - Assembling the station's `weewx.conf` from the fragments in the `configs` repository:
   `configs/extensions/development-config.sh`.
 - Listing the WeeWX versions the tools should be checked against: `weewx-extensions/development-tools/tools/listVersions.py`.
-- Installing the per-interpreter dependencies: `pyenv install`, then per version
+- Installing the per-interpreter dependencies: `pyenv install` for the versions in
+  `tools/supported-pythons` (the first is the development default), then per version
   `pip install configobj`, `pip install ct3`, `pip install Pillow`, `pip install paho.mqtt`,
   `pip install jplephem`, `pip install skyfield`, and `pip install boto3 six` for the AWS-S3
   report's upload generator.
@@ -82,14 +93,16 @@ configured.
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`; with `--python`, repeats the environment check and the tests on each version. | - |
+| `devenv.sh` | The shared settings every repository sources from its `.devenv`; selects the development default Python and the `WEEWX_*` defaults. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `versions.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`; with `--python`, repeats the environment check and the tests on each version. | - |
+| `versions.sh` | Reads the supported Python versions from `supported-pythons`; `--check` reports a workflow, the `.devenv-template`, or a consumer's `.devenv` that disagrees with it, and a `.devenv` that pins a version. | - |
 | `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | Lint the workflows |
 | `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
 | `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
 | `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
-| `checkenv.sh` | Verifies weewx, paho, the tools, and the brokers the integration and e2e suites need. Reports every miss at once. | Install dependencies |
-| `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS`, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
+| `checkenv.sh` | Verifies weewx, paho, the tools, and the brokers the integration and e2e suites need. Reports every miss at once, and notes an interpreter outside the supported versions. | Install dependencies |
+| `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS` on the newest supported version, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
 | `functests.sh` | Runs `bin/user/tests/func`. | Function tests |
 | `integtests.sh` | Runs `bin/user/tests/integ` with `--import-mode=append`. | Integration tests |
@@ -123,16 +136,17 @@ sqlite 3.54.1 the same fork survives. Every interpreter tested was affected (3.9
 process, so it presented as an intermittent hang rather than a crash.
 
 ```bash
-build-pythons.sh                 # rebuild and verify 3.10.22 and 3.15.2
+build-pythons.sh                 # rebuild and verify the oldest and newest supported versions
 build-pythons.sh 3.14.10         # a version it does not know, with pyenv's OpenSSL choice
 build-pythons.sh --verify-only   # report what is installed, change nothing
 ```
 
-It rebuilds the interpreter, so the versions, and the OpenSSL each is built against, are listed
-in the script. `build-pythons.sh --verify-only` checks the extension's recorded library, the
-version loaded at runtime, and the OpenSSL, because only the last two prove that the swap took
-effect. A plain `pyenv install -f` undoes the fix: CPython's configure reaches `sqlite3` through
-Homebrew's shim for the macOS SDK, so the script fails in preflight rather than building that.
+It rebuilds the interpreter, so the OpenSSL each version is built against is listed in the script,
+and a bare run covers the ends of `tools/supported-pythons`. `build-pythons.sh --verify-only`
+checks the extension's recorded library, the version loaded at runtime, and the OpenSSL, because
+only the last two prove that the swap took effect. A plain `pyenv install -f` undoes the fix:
+CPython's configure reaches `sqlite3` through Homebrew's shim for the macOS SDK, so the script
+fails in preflight rather than building that.
 
 ```bash
 python3 sqlite-fork-repro.py --trials 3                          # in-memory databases
@@ -152,8 +166,8 @@ The scripts read these from the environment, normally set in `.devenv`.
 | --- | --- | --- |
 | `WEEWX_MODULE_NAME` | - | The module under test, e.g. `mqttsubscribe`. |
 | `WEEWX_TOOL_PATH` | - | This `tools` directory, added to `PATH`. |
+| `WEEWX_PYENV_VERSION` | `supported-pythons`, first entry | The development default, selected by the shared `devenv.sh`; exported as `PYENV_VERSION`. |
 | `WEEWX_PYTHONPATH` | `bin` | `PYTHONPATH` for the tests. With weewx installed, `bin` is enough. |
-| `WEEWX_PYENV_VERSION` | - | Exported as `PYENV_VERSION` when set. |
 | `WEEWX_LINT_PATHS` | `bin/user/${WEEWX_MODULE_NAME}.py` | What `lint.sh` checks, the workflow's `lint-paths` input. |
 | `WEEWX_LINT_FAIL` | `1` | With `0`, `lint.sh` reports the findings without failing, the workflow's `lint-fail` input. |
 | `WEEWX_COMMON_REPOS` | - | The shared repositories this repository vendors, the workflow's `common-repos` input. |
@@ -162,8 +176,12 @@ The scripts read these from the environment, normally set in `.devenv`.
 | `WEEWX_HTML` | `0` | With `1`, writes the HTML test reports. Needs `pytest-html`. |
 | `WEEWX_RESULTS_DIR` | `results` | Where the reports are written. |
 
-The workflow installs weewx from PyPI, so `WEEWX_PYTHONPATH` only needs the checkout.
-Until weewx is installed, point it at a checkout as well:
+The shared `tools/devenv.sh` sets the interpreter and `WEEWX_PYTHONPATH` from there; a repository
+overrides either in its own `.devenv` when it needs to. `WEEWX_PYENV_VERSION` is exported as
+`PYENV_VERSION`, so the `python` and `pytest` of the development shell follow it.
+
+The workflow installs weewx from PyPI, so `WEEWX_PYTHONPATH` only needs the checkout. Until weewx is
+installed, the shared `devenv.sh` points it at a checkout as well:
 
 ```bash
 if PYTHONPATH= python3 -c 'import weewx' >/dev/null 2>&1; then

@@ -33,7 +33,7 @@
 # either. The three variables below are what make the keg win.
 #
 # Usage:
-#   build-pythons.sh                 # rebuild and verify 3.10.22 and 3.15.2
+#   build-pythons.sh                 # rebuild and verify the oldest and newest supported versions
 #   build-pythons.sh 3.14.10         # just that version
 #   build-pythons.sh --verify-only   # check installed versions, change nothing
 #
@@ -58,14 +58,17 @@ set -uo pipefail
 
 SQLITE_PREFIX="${SQLITE_PREFIX:-/opt/homebrew/opt/sqlite}"
 MAKE_OPTS="${MAKE_OPTS:--j$(sysctl -n hw.ncpu)}"
-# What a bare `build-pythons.sh` (or `--verify-only`) covers: the interpreters on this machine
-# that matter, so the default run keeps them current. It restricts nothing - naming a version
+# What a bare `build-pythons.sh` (or `--verify-only`) covers: the ends of the supported range,
+# which are the versions a compatibility check turns on. It restricts nothing - naming a version
 # overrides the list - and it changes nothing outside this script: not pyenv's global version,
 # not which interpreter anything else is launched with.
 #
-# A new version needs an entry here only to be included in the default run; add it to
-# openssl_formula() and expected_openssl() as well to pin and assert its OpenSSL.
-DEFAULT_VERSIONS=(3.10.22 3.15.2)
+# The versions come from supported-pythons (through versions.sh), so a new supported version
+# needs no entry here. Add one to openssl_formula() and expected_openssl() only to pin and
+# assert its OpenSSL.
+TOOLS_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+. "${TOOLS_DIR}/versions.sh"
+DEFAULT_VERSIONS=("${WEEWX_PYTHON_OLDEST}" "${WEEWX_PYTHON_LATEST}")
 
 # The description above, without the copyright block and without depending on line numbers.
 usage() {
