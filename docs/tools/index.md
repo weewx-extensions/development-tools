@@ -245,6 +245,17 @@ Only final `vX.Y.Z` releases are considered; prereleases are ignored. `--no-late
 alone. The script is only needed for the initial backfill or to repair drift; the workflow maintains
 the tags after each release.
 
+The floating `latest` tag is the one to diff the local checkout against, to see what a repository's
+changes since its last release are:
+
+```bash
+git diff latest..HEAD             # working-tree diff against the last release
+git diff --stat latest..HEAD      # summary of what changed since
+git diff --name-only latest..HEAD
+git log --oneline latest.HEAD     # commits since the last release
+
+```
+
 ## Outputs
 
 Reports go to `WEEWX_RESULTS_DIR`, the way CI archives them:
