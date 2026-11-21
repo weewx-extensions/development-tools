@@ -112,6 +112,7 @@ configured.
 | `cov-func.sh` | The same for the function tests. | - |
 | `watch*.sh` | Re-runs a suite, and the coverage report, when its script, the module, or the tests change. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
+| `run-git.sh` | Runs a git command in every subdirectory of a directory that is a git checkout, passing the command and its arguments through as-is; `<git command...> [arguments...]`. | - |
 | `build-pythons.sh` | Rebuilds pyenv interpreters against Homebrew's SQLite (and the OpenSSL each one uses); `--verify-only` checks them. macOS only. | - |
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
 | `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
