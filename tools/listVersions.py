@@ -20,6 +20,7 @@ repos = ['weewx-gw1000',
          'forks/weewx-skyfield',
 
          'weewx-extensions/aqi-xtype',
+         'weewx-extensions/development-tools',
          'weewx-extensions/healthchecks',
          'weewx-extensions/jas',
          'weewx-extensions/pushover',
