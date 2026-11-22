@@ -117,7 +117,7 @@ configured.
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
 | `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
 | `update-repos.sh` | Pulls the checkouts in a directory and updates their tags. | - |
-| `new-repo.sh` | Creates a new repository: `git init` of `DIR/NAME` on the workspaces' branch, `master` (override with `-b`), and copies the templated files into it — `.devenv`, `.env`, `docs/`, `.github/workflows/`, `sonar-project.properties` — where values are not yet known they read `REPLACE_ME` and the new repository's name fills the values that are its own. Run it from the workspace you want — `weewx-mqtt` or `weewx-extensions` both qualify. | - |
+| `new-repo.sh` | Creates a new repository: `git init` of `DIR/NAME` on the workspaces' branch, `master` (override with `-b`), and copies the templated files into it — `.devenv`, `.env`, `changes.txt`, `docs/`, `.github/workflows/`, `sonar-project.properties` — where values are not yet known they read `REPLACE_ME` and the new repository's name fills the values that are its own. Run it from the workspace you want — `weewx-mqtt` or `weewx-extensions` both qualify. | - |
 
 `configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so
 `verify.sh` passes in a repository that keeps only some of them. `development-tools` itself is one:

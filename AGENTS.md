@@ -27,7 +27,7 @@ templates, and a sample extension the tooling is exercised against.
 | `config/` | The **published** configs (`.pylintrc`, `.pylintrc-tests`, `.flake8`, `.coveragerc`, `.codacy.yaml`, `requirements.txt`), copied into consumers by `configs.sh`. |
 | `workflows-template/` | The caller workflows a consumer copies into its `.github/workflows/`. |
 | `docs/`, `docs-template/` | The published Jekyll site, and what a new extension copies. |
-| `.devenv-template`, `.env-template` | The settings and environment a consumer supplies. |
+| `.devenv-template`, `.env-template`, `changes.txt-template` | The settings, environment and release notes a consumer supplies. |
 | `sonar-project.properties-template` | The server key for the `sonar-scan` input. |
 | `bin/user/`, `install.py` | The sample extension, used as test data. |
 
