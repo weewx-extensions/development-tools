@@ -7,13 +7,13 @@
 #    fetch, push, log, and so on, with the arguments after the command passed
 #    through as-is.
 #
-#    Usage: run-git.sh [DIRECTORY] <git command...> [git command arguments...]
+#    Usage: run-git.sh [--directory DIR] <git command...> [git command arguments...]
 #
 set -uo pipefail
 
 usage() {
     cat <<'EOF'
-usage: run-git.sh [DIRECTORY] <git command...> [git command arguments...]
+usage: run-git.sh [--directory DIR] <git command...> [git command arguments...]
 
 Run <git command...> in every subdirectory of DIRECTORY that is a git
 checkout, as `git -C <subdir> <git command...> [arguments...]`; the
