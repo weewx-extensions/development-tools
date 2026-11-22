@@ -93,31 +93,31 @@ configured.
 
 | Script | Does | Corresponding CI step |
 | --- | --- | --- |
-| `devenv.sh` | The shared settings every repository sources from its `.devenv`; selects the development default Python and the `WEEWX_*` defaults. | - |
-| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `versions.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`; with `--python`, repeats the environment check and the tests on each version. | - |
-| `versions.sh` | Reads the supported Python versions from `supported-pythons`; `--check` reports a workflow, the `.devenv-template`, or a consumer's `.devenv` that disagrees with it, and a `.devenv` that pins a version. | - |
 | `actionlint.sh` | Lints `.github/workflows`, downloading the pinned actionlint into `tools/` on first use. | Lint the workflows |
-| `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
-| `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
-| `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
-| `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
+| `alltests.sh` | Runs the suites in `WEEWX_TEST_SUITES`, skipping suites with no directory, and stops at the first failure. | All of the test steps |
+| `build-pythons.sh` | Rebuilds pyenv interpreters against Homebrew's SQLite (and the OpenSSL each one uses); `--verify-only` checks them. macOS only. | - |
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the brokers the integration and e2e suites need. Reports every miss at once, and notes an interpreter outside the supported versions. | Install dependencies |
-| `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS` on the newest supported version, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
-| `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
+| `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
+| `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
+| `cov-func.sh` | The same for the function tests. | - |
+| `coverage.sh` | Measures unit test coverage, writes the HTML and XML reports. | Code Coverage |
+| `devenv.sh` | The shared settings every repository sources from its `.devenv`; selects the development default Python and the `WEEWX_*` defaults. | - |
+| `e2etests.sh` | Runs `bin/user/tests/e2e`. | E2E tests |
 | `functests.sh` | Runs `bin/user/tests/func`. | Function tests |
 | `integtests.sh` | Runs `bin/user/tests/integ` with `--import-mode=append`. | Integration tests |
-| `e2etests.sh` | Runs `bin/user/tests/e2e`. | E2E tests |
-| `alltests.sh` | Runs the suites in `WEEWX_TEST_SUITES`, skipping suites with no directory, and stops at the first failure. | All of the test steps |
-| `coverage.sh` | Measures unit test coverage, writes the HTML and XML reports. | Code Coverage |
-| `cov-func.sh` | The same for the function tests. | - |
-| `watch*.sh` | Re-runs a suite, and the coverage report, when its script, the module, or the tests change. | - |
-| `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
-| `run-git.sh` | Runs a git command in every subdirectory of a directory that is a git checkout, passing the command and its arguments through as-is; `<git command...> [arguments...]`. | - |
-| `build-pythons.sh` | Rebuilds pyenv interpreters against Homebrew's SQLite (and the OpenSSL each one uses); `--verify-only` checks them. macOS only. | - |
-| `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
-| `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
-| `update-repos.sh` | Pulls the checkouts in a directory and updates their tags. | - |
+| `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS` on the newest supported version, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `new-repo.sh` | Creates a new repository: `git init` of `DIR/NAME` on the workspaces' branch, `master` (override with `-b`), and copies the templated files into it — `.devenv`, `.env`, `changes.txt`, `docs/`, `.github/workflows/`, `sonar-project.properties` — where values are not yet known they read `REPLACE_ME` and the new repository's name fills the values that are its own. Run it from the workspace you want — `weewx-mqtt` or `weewx-extensions` both qualify. | - |
+| `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
+| `run-git.sh` | Runs a git command in every subdirectory of a directory that is a git checkout, passing the command and its arguments through as-is; `<git command...> [arguments...]`. | - |
+| `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
+| `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
+| `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
+| `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
+| `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
+| `update-repos.sh` | Pulls the checkouts in a directory and updates their tags. | - |
+| `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `versions.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`; with `--python`, repeats the environment check and the tests on each version. | - |
+| `versions.sh` | Reads the supported Python versions from `supported-pythons`; `--check` reports a workflow, the `.devenv-template`, or a consumer's `.devenv` that disagrees with it, and a `.devenv` that pins a version. | - |
+| `watch*.sh` | Re-runs a suite, and the coverage report, when its script, the module, or the tests change. | - |
 
 `configs.sh --check` skips a config the repository does not carry, as the workflow's check does, so
 `verify.sh` passes in a repository that keeps only some of them. `development-tools` itself is one:
