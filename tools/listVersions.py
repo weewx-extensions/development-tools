@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
 import os
+import signal
 import subprocess
 
 home = os.environ['HOME']
-REPOS_DIR=f'{home}/weewx_code/'
-WEEWX_DIR=f'{home}/weewx/'
+REPOS_DIR = f'{home}/weewx_code/'
+WEEWX_DIR = f'{home}/weewx/'
+TIMEOUT = 30
 
 repos = ['weewx-gw1000',
          'WeeWX-Extras',
-         
+
          'forks/vds-weewx-v3-mem-extension',
          'forks/weewx-cmon',
          'forks/weewx-celestial',
@@ -31,61 +33,48 @@ repos = ['weewx-gw1000',
          'configs',
          'secrets']
 
-command = ['git', 'fetch', '--quiet']
-print(f'\nRunning command: {" ".join(command)}')
-try:
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=WEEWX_DIR)
-    output, unused_err = process.communicate()
-    print(f'weewx: {output.decode("utf-8")}')
-except FileNotFoundError:
-    print(f'{WEEWX_DIR} does not exist')
 
-for repo in repos:
+def run(command, cwd):
     try:
-        cwd = f'{REPOS_DIR}{repo}'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=cwd)
-        output, unused_err = process.communicate()
-        print(f'{repo}: {output.decode("utf-8")}')
+        process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, cwd=cwd,
+                                   start_new_session=True)
     except FileNotFoundError:
-        print(f'{repo} does not exist')
-
-command = ['git', 'status', '--branch', '-uno', '--null']
-print(f'\nRunning command: {" ".join(command)}')
-try:
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=WEEWX_DIR)
-    output, unused_err = process.communicate()
-    print(f'weewx: {output.decode("utf-8")}')
-except FileNotFoundError:
-    print(f'{WEEWX_DIR} does not exist')
-
-for repo in repos:
+        return None
     try:
-        cwd = f'{REPOS_DIR}{repo}'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=cwd)
-        output, unused_err = process.communicate()
-        print(f'{repo}: {output.decode("utf-8")}')
-    except FileNotFoundError:
-        # print(f'{repo} does not exist')
-        continue
+        output, errors = process.communicate(timeout=TIMEOUT)
+    except subprocess.TimeoutExpired:
+        # git's ssh child outlives a bare process.kill(), so kill the whole group.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
+        return f'TIMED OUT after {TIMEOUT}s'
+    text = output.decode('utf-8', errors='replace').strip()
+    if errors.strip():
+        detail = errors.decode('utf-8', errors='replace').strip()
+        text = '\n'.join(part for part in (text, detail) if part)
+    return text
 
-command = ['git', 'log', '--format=format:"%ci %h %d %s"', '-n 1']
-print(f'\nRunning command: {" ".join(command)}')
-try:
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=WEEWX_DIR)
-    output, unused_err = process.communicate()
-    print(f'weewx: {output.decode("utf-8")}')
-except FileNotFoundError:
-    print(f'{WEEWX_DIR} does not exist')
 
-for repo in repos:
-    try:
-        cwd = f'{REPOS_DIR}{repo}'
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=cwd)
-        output, unused_err = process.communicate()
-        print(f'{repo}: {output.decode("utf-8")}')
-    except FileNotFoundError:
-        # print(f'{repo} does not exist')
-        continue
+def show(command, targets):
+    print(f'\nRunning command: {" ".join(command)}')
+    for label, cwd, report_missing in targets:
+        text = run(command, cwd)
+        if text is None:
+            if report_missing:
+                print(f'{label} does not exist')
+        else:
+            print(f'{label}: {text}')
+
+
+targets = [('weewx', WEEWX_DIR, True)]
+targets += [(repo, f'{REPOS_DIR}{repo}', False) for repo in repos]
+
+show(['git', 'fetch', '--quiet'], targets)
+show(['git', 'status', '--branch', '-uno', '--null'], targets)
+show(['git', 'log', '--format=format:"%ci %h %d %s"', '-n 1'], targets)
 
 print("\nFor more information run the following commands from the repository directory.")
 print('  git log HEAD..origin --format="format:%ci %h %d %s"')
