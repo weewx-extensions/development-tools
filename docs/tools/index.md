@@ -103,13 +103,12 @@ configured.
 | `coverage.sh` | Measures unit test coverage, writes the HTML and XML reports. | Code Coverage |
 | `devenv.sh` | The shared settings every repository sources from its `.devenv`; selects the development default Python and the `WEEWX_*` defaults. | - |
 | `e2etests.sh` | Runs `bin/user/tests/e2e`. | E2E tests |
-| `each-repo.sh` | Runs a command in every git checkout under a directory, with the checkout as the working directory; `--directory DIR` selects the directory. | - |
+| `each-repo.sh` | Runs a command in every git checkout under a directory, with the checkout as the working directory; `--directory DIR` selects the directory, and `--latest` limits it to the checkouts that carry the floating `latest` tag. | - |
 | `functests.sh` | Runs `bin/user/tests/func`. | Function tests |
 | `integtests.sh` | Runs `bin/user/tests/integ` with `--import-mode=append`. | Integration tests |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS` on the newest supported version, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `new-repo.sh` | Creates a new repository: `git init` of `DIR/NAME` on the workspaces' branch, `master` (override with `-b`), and copies the templated files into it — `.devenv`, `.env`, `changes.txt`, `docs/`, `.github/workflows/`, `sonar-project.properties` — where values are not yet known they read `REPLACE_ME` and the new repository's name fills the values that are its own. Run it from the workspace you want — `weewx-mqtt` or `weewx-extensions` both qualify. | - |
 | `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones; `-C DIR` selects another checkout. | - |
-| `run-git.sh` | Runs a git command in every subdirectory of a directory that is a git checkout, passing the command and its arguments through as-is; `--directory DIR` selects the directory. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
 | `setup.sh` | Builds the development tree under `$HOME`: clones the repositories in its `EDIT THESE` block, unpacks the WeeWX releases, and links the extension modules and skins into the station. Reports each create, skip, or error. | - |
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
@@ -132,7 +131,9 @@ passes rather than blocking `verify.sh`.
 `each-repo.sh` is the workspace runner: it runs any command in every checkout under a directory,
 with that checkout as the working directory. `each-repo.sh update-repo.sh` is the batch form of
 `update-repo.sh`, and `each-repo.sh tagversions.sh --check` or `each-repo.sh refs.sh --check` sweeps
-a workspace without a `for` loop.
+a workspace without a `for` loop. `each-repo.sh --latest git status` limits the sweep to the
+repositories that carry the floating `latest` tag, skipping the WeeWX release checkouts and the
+sample repository.
 
 ## Homebrew interpreters
 
