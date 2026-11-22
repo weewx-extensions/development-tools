@@ -81,6 +81,7 @@ for dir in "${directory}"/*/; do
     # A worktree or submodule has .git as a file rather than a directory, so
     # existence rather than -d is what identifies a checkout here.
     if [ ! -e "${repo}/.git" ]; then
+        echo
         echo "skipping ${repo}: not a git repository"
         continue
     fi
@@ -88,6 +89,7 @@ for dir in "${directory}"/*/; do
     # floating latest tag; a symlinked WeeWX release or a sample checkout
     # does not, and is not one of the repositories this addresses.
     if ! git -C "${repo}" rev-parse -q --verify refs/tags/latest >/dev/null 2>&1; then
+        echo
         echo "skipping ${repo}: no latest tag"
         continue
     fi
