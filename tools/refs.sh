@@ -4,7 +4,7 @@
 #
 #    See the file LICENSE.txt for your full rights.
 #
-#    Point this repository's reusable workflow refs at the current release, or
+#    Point a repository's reusable workflow refs at the current release, or
 #    with --check, report the ones that have gone stale.
 #
 #    analyze-test, analyze-test-matrix, perform-analyze-test, and fetch follow
@@ -12,22 +12,59 @@
 #    follow latest. The major version is this repository's own config-ref
 #    default, so a release moves the refs the same way it moves the config files.
 #
+#    Usage: refs.sh [-C DIR] [--check]
+#
 set -uo pipefail
 
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 DEVTOOLS_DIR="$(dirname "${TOOLS_DIR}")"
 
+usage() {
+    cat <<'EOF'
+usage: refs.sh [-C DIR] [--check]
+
+Point a repository's reusable workflow refs at the current release.
+
+  -C, --repo DIR  The checkout to update. Default: the current directory.
+  --check         Report the stale refs, change nothing.
+EOF
+}
+
 check=0
-if [ "${1:-}" == '--check' ]; then
-    check=1
+repo=.
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -C|--repo)
+            if [ "$#" -lt 2 ]; then
+                echo "refs.sh: $1 needs a value." >&2
+                usage >&2
+                exit 2
+            fi
+            repo="$2"
+            shift 2
+            ;;
+        --check) check=1; shift ;;
+        -h|--help) usage; exit 0 ;;
+        *)
+            echo "refs.sh: unknown argument '$1'." >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+if [ ! -d "${repo}" ]; then
+    echo "refs.sh: ${repo} is not a directory." >&2
+    exit 1
 fi
 
-if [ ! -d .github/workflows ]; then
+if [ ! -d "${repo}/.github/workflows" ]; then
     echo "No .github/workflows here, nothing to do."
     exit 0
 fi
 
-if [ "$(pwd -P)" == "$(cd "${DEVTOOLS_DIR}" && pwd -P)" ]; then
+if [ "$(cd "${repo}" && pwd -P)" == "$(cd "${DEVTOOLS_DIR}" && pwd -P)" ]; then
     echo "This is development-tools itself; its own workflows test the published refs."
     exit 0
 fi
@@ -52,7 +89,7 @@ expected_ref() {
 }
 
 status=0
-for workflow in .github/workflows/*.yml; do
+for workflow in "${repo}"/.github/workflows/*.yml; do
     [ -f "${workflow}" ] || continue
 
     # local-*, master-*, and the test repository's harnesses deliberately

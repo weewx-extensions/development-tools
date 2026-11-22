@@ -6,7 +6,8 @@
 #
 #    Pull the git checkouts in a directory of repositories and update their
 #    tags, so a local copy of a shared repository can be brought current with
-#    its upstream.
+#    its upstream. A single checkout can be passed instead of the directory
+#    that holds it.
 #
 #    Usage: update-repos.sh [DIRECTORY]
 #
@@ -16,14 +17,16 @@ usage() {
     cat <<'EOF'
 usage: update-repos.sh [DIRECTORY]
 
-Pull every git checkout in DIRECTORY and update its tags. DIRECTORY
-defaults to the weewx-contrib directory of the development tree.
+Pull every git checkout in DIRECTORY and update its tags. If DIRECTORY is
+itself a checkout, only that one is updated. DIRECTORY defaults to the
+weewx-contrib directory of the development tree.
 
   -h, --help  Show this help.
 EOF
 }
 
 directory="${HOME}/weewx_code/weewx-contrib"
+directory_set=0
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -35,9 +38,24 @@ while [ "$#" -gt 0 ]; do
                 exit 2
             fi
             directory="$2"
+            directory_set=1
             shift 2
             ;;
-        *) echo "update-repos.sh: unknown argument '${1}'." >&2; usage >&2; exit 2 ;;
+        -*)
+            echo "update-repos.sh: unknown argument '${1}'." >&2
+            usage >&2
+            exit 2
+            ;;
+        *)
+            if [ "${directory_set}" -eq 1 ]; then
+                echo "update-repos.sh: unexpected argument '${1}'." >&2
+                usage >&2
+                exit 2
+            fi
+            directory="$1"
+            directory_set=1
+            shift
+            ;;
     esac
 done
 
@@ -47,15 +65,14 @@ if [ ! -d "${directory}" ]; then
 fi
 
 status=0
-for dir in "${directory}"/*/; do
-    repo="${dir%/}"
-    if [ ! -d "${repo}/.git" ]; then
-        continue
-    fi
+
+update_repo() {
+    local repo="$1"
+
     echo "update ${repo}"
     if git -C "${repo}" fetch --tags --prune; then
         if git -C "${repo}" pull --ff-only; then
-            continue
+            return 0
         fi
         echo "update-repos.sh: ${repo}: pull failed." >&2
         status=1
@@ -63,6 +80,18 @@ for dir in "${directory}"/*/; do
         echo "update-repos.sh: ${repo}: fetch failed." >&2
         status=1
     fi
-done
+}
+
+if [ -e "${directory}/.git" ]; then
+    update_repo "${directory}"
+else
+    for dir in "${directory}"/*/; do
+        repo="${dir%/}"
+        if [ ! -e "${repo}/.git" ]; then
+            continue
+        fi
+        update_repo "${repo}"
+    done
+fi
 
 exit "${status}"

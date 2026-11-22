@@ -107,14 +107,14 @@ configured.
 | `integtests.sh` | Runs `bin/user/tests/integ` with `--import-mode=append`. | Integration tests |
 | `lint.sh` | Runs pylint and flake8 over `WEEWX_LINT_PATHS` on the newest supported version, failing if either reports unless `WEEWX_LINT_FAIL` is `0`. | Lint with pylint / flake8 |
 | `new-repo.sh` | Creates a new repository: `git init` of `DIR/NAME` on the workspaces' branch, `master` (override with `-b`), and copies the templated files into it — `.devenv`, `.env`, `changes.txt`, `docs/`, `.github/workflows/`, `sonar-project.properties` — where values are not yet known they read `REPLACE_ME` and the new repository's name fills the values that are its own. Run it from the workspace you want — `weewx-mqtt` or `weewx-extensions` both qualify. | - |
-| `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
+| `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones; `-C DIR` selects another checkout. | - |
 | `run-git.sh` | Runs a git command in every subdirectory of a directory that is a git checkout, passing the command and its arguments through as-is; `<git command...> [arguments...]`. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
 | `setup.sh` | Builds the development tree under `$HOME`: clones the repositories in its `EDIT THESE` block, unpacks the WeeWX releases, and links the extension modules and skins into the station. Reports each create, skip, or error. | - |
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
-| `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
+| `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift, and `-C DIR` selects another checkout. | - |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
-| `update-repos.sh` | Pulls the checkouts in a directory and updates their tags. | - |
+| `update-repos.sh` | Pulls the checkouts in a directory and updates their tags; a single checkout can be passed instead. | - |
 | `verify.sh` | Runs `checkenv.sh`, `lint.sh`, `actionlint.sh`, `refs.sh`, `versions.sh`, `configs.sh`, `commonrepos.sh`, and `alltests.sh`; with `--python`, repeats the environment check and the tests on each version. | - |
 | `versions.sh` | Reads the supported Python versions from `supported-pythons`; `--check` reports a workflow, the `.devenv-template`, or a consumer's `.devenv` that disagrees with it, and a `.devenv` that pins a version. | - |
 | `watch*.sh` | Re-runs a suite, and the coverage report, when its script, the module, or the tests change. | - |
@@ -243,8 +243,9 @@ tagversions.sh --push    # write the tags locally and force-update origin
 ```
 
 Only final `vX.Y.Z` releases are considered; prereleases are ignored. `--no-latest` leaves `latest`
-alone. The script is only needed for the initial backfill or to repair drift; the workflow maintains
-the tags after each release.
+alone. Pass `-C DIR` to work on a checkout other than the current directory. The script is only
+needed for the initial backfill or to repair drift; the workflow maintains the tags after each
+release.
 
 The floating `latest` tag is the one to diff the local checkout against, to see what a repository's
 changes since its last release are:
