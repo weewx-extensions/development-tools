@@ -99,7 +99,7 @@ configured.
 | `checkenv.sh` | Verifies weewx, paho, the tools, and the brokers the integration and e2e suites need. Reports every miss at once, and notes an interpreter outside the supported versions. | Install dependencies |
 | `commonrepos.sh` | Copies the files of the shared repositories; `--check` reports drift. | Check the common repositories |
 | `configs.sh` | Copies the shared config files from `development-tools/config`; with `--check`, fails when a copy has drifted. | - |
-| `cov-func.sh` | The same for the function tests. | - |
+| `cov-func.sh` | Measures function test coverage, writes the HTML and XML reports. | - |
 | `coverage.sh` | Measures unit test coverage, writes the HTML and XML reports. | Code Coverage |
 | `devenv.sh` | The shared settings every repository sources from its `.devenv`; selects the development default Python and the `WEEWX_*` defaults. | - |
 | `e2etests.sh` | Runs `bin/user/tests/e2e`. | E2E tests |
