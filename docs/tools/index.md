@@ -110,7 +110,7 @@ configured.
 | `refs.sh` | Points the reusable workflow refs at the current major version tag, or with `--check`, reports the stale ones. | - |
 | `run-git.sh` | Runs a git command in every subdirectory of a directory that is a git checkout, passing the command and its arguments through as-is; `<git command...> [arguments...]`. | - |
 | `runworkflow.sh` | Dispatches a workflow on GitHub and watches it. | - |
-| `setup.sh` | Provisions a development machine from the repositories in the script's `EDIT THESE` block: links the extension modules, the skins, and the release checkouts into the station, and reports every action. | - |
+| `setup.sh` | Builds the development tree under `$HOME`: clones the repositories in its `EDIT THESE` block, unpacks the WeeWX releases, and links the extension modules and skins into the station. Reports each create, skip, or error. | - |
 | `sqlite-fork-repro.py` | Reproduces the fork-after-SQLite SIGSEGV, to check whether an interpreter is affected. macOS only. | - |
 | `tagversions.sh` | Creates or repairs the floating `vX`, `vX.Y`, and `latest` tags from the release tags; `--check` reports drift. | - |
 | `unittests.sh` | Runs `bin/user/tests/unit`. | Unit tests |
