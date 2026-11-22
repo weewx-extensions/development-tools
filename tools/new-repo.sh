@@ -6,7 +6,7 @@
 #
 #    Create a new repository: make DIR/NAME, git-init it on the branch the
 #    workspaces use, master, unless -b says otherwise, and copy the templated
-#    files into it: .devenv, .env, changes.txt, docs/, .github/workflows/,
+#    files into it: .devenv, .env, CHANGELOG.md, docs/, .github/workflows/,
 #    sonar-project.properties. Run it from the workspace you want the
 #    repository to join — weewx-mqtt and weewx-extensions both qualify — or
 #    pass it with -d. The new repository's name fills the values that are the
@@ -22,7 +22,7 @@ usage: new-repo.sh [-b BRANCH] [-d DIR] NAME
 
 Create a new repository: make DIR/NAME, git-init it on the branch the
 workspaces use, master, and copy the templated files into it — .devenv,
-.env, changes.txt, docs/, .github/workflows/, sonar-project.properties.
+.env, CHANGELOG.md, docs/, .github/workflows/, sonar-project.properties.
 The new repository's name fills the values that are the repository's own;
 the rest still read REPLACE_ME.
 
@@ -153,7 +153,7 @@ substitute() {
 status=0
 scaffold .devenv .devenv-template || status=1
 scaffold .env .env-template || status=1
-scaffold changes.txt changes.txt-template || status=1
+scaffold CHANGELOG.md CHANGELOG.md-template || status=1
 scaffold docs docs-template || status=1
 scaffold .github/workflows workflows-template || status=1
 scaffold sonar-project.properties sonar-project.properties-template || status=1

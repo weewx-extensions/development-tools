@@ -66,7 +66,7 @@ A typical extension directory structure would look like this.
 │           ├── func
 │           ├── integ
 │           └── unit
-├── changes.txt
+├── CHANGELOG.md
 ├── codecov.yml
 ├── .coverage
 ├── .coveragerc
